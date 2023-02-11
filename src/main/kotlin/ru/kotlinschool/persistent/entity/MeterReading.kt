@@ -10,9 +10,6 @@ import java.time.LocalDate
  */
 @Entity
 data class MeterReading(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0,
 
     /**
      * Дом
@@ -42,5 +39,9 @@ data class MeterReading(
      */
     @NotNull
     @Column(name = "meter_reading_date")
-    val actionDate: LocalDate
-) : Serializable
+    val actionDate: LocalDate,
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0
+)

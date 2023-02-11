@@ -9,9 +9,6 @@ import java.io.Serializable
  */
 @Entity
 data class House(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0,
 
     /**
      * Управляющая компания
@@ -33,6 +30,10 @@ data class House(
     @NotNull
     val chatId: Long,
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
+
     /**
      * Квартиры
      */
@@ -44,4 +45,4 @@ data class House(
      */
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "house")
     val services: List<PublicService> = ArrayList()
-) : Serializable
+)

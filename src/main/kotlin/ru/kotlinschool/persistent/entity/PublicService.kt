@@ -11,9 +11,6 @@ import java.time.LocalDate
  */
 @Entity
 data class PublicService(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0,
 
     /**
      * Дом
@@ -38,20 +35,20 @@ data class PublicService(
     @Enumerated(value = EnumType.STRING)
     val calculationType: CalculationType,
 
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
+
     /**
      * Тарифы
      */
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "service")
     val rates: List<Rate> = ArrayList()
-) : Serializable
+)
 
 
 @Entity
 data class Rate(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0,
-
     /**
      * Услуга
      */
@@ -71,8 +68,12 @@ data class Rate(
      * Дата начала действия тарифа
      */
     @NotNull
-    val dateBegin: LocalDate
-): Serializable
+    val dateBegin: LocalDate,
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0
+)
 
 /**
  * Тип расчета суммы

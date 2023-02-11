@@ -8,9 +8,11 @@ import jakarta.validation.constraints.NotNull
  */
 @Entity
 data class Flat(
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0,
+    /**
+     * Ид пользователя-администратора в Telegram
+     */
+    @NotNull
+    val userId: Long,
 
     /**
      * Дом
@@ -27,7 +29,6 @@ data class Flat(
     @NotNull
     val number: String,
 
-
     /**
      * Площадь
      */
@@ -38,11 +39,11 @@ data class Flat(
      */
     var numberOfResidents: Int? = null,
 
-    /**
-     * Ид пользователя-администратора в Telegram
-     */
-    @NotNull
-    val userId: Long,
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    var id: Long = 0,
+
 
     /**
      * Услуги
