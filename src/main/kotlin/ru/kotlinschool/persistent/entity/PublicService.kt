@@ -11,7 +11,6 @@ import java.time.LocalDate
  */
 @Entity
 data class PublicService(
-
     /**
      * Дом
      */

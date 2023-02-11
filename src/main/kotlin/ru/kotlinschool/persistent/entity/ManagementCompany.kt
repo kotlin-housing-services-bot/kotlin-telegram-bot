@@ -9,7 +9,6 @@ import java.io.Serializable
  */
 @Entity
 data class ManagementCompany (
-
     /**
      * Название организации
      */

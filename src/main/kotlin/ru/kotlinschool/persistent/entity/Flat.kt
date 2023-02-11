@@ -39,11 +39,9 @@ data class Flat(
      */
     var numberOfResidents: Int? = null,
 
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
-
 
     /**
      * Услуги

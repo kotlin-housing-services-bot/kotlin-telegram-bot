@@ -10,7 +10,6 @@ import java.time.LocalDate
  */
 @Entity
 data class MeterReading(
-
     /**
      * Дом
      */
