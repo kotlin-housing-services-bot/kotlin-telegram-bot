@@ -9,11 +9,11 @@ import ru.kotlinschool.persistent.entity.PublicService
 @Repository
 interface MeterReadingRepository : JpaRepository<MeterReading, Long> {
 
-    fun findByFlatAndService(flat: Flat, service: PublicService): List<MeterReading>
+    fun findByFlatAndPublicService(flat: Flat, service: PublicService): List<MeterReading>
 
     /**
      * Найти последние показания
      */
-    fun findFirstByFlatAndServiceOrderByActionDateDesc(flat: Flat, service: PublicService): MeterReading?
+    fun findFirstByFlatAndPublicServiceOrderByActionDateDesc(flat: Flat, service: PublicService): MeterReading?
 
 }

@@ -15,14 +15,15 @@ class ManagementCompanyRepositoryTest {
     private lateinit var rep: ManagementCompanyRepository
 
     @Test
-    fun findByUserIdSuccessTest() {
+    fun findByUserIdTest() {
         // given
         val savedManagementCompany1 = rep.save(ManagementCompany(name = "УК", inn = "123456789111", userId = 1L))
-        val savedManagementCompany2 = rep.save(ManagementCompany(name = "ТСЖ", inn = "222222222222", userId = 2L))
+        rep.save(ManagementCompany(name = "ТСЖ", inn = "222222222222", userId = 2L))
 
         // when
         val foundEntity = rep.findByUserId(1L)
         // then
         Assertions.assertTrue { foundEntity == savedManagementCompany1 }
     }
+
 }

@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository
 import ru.kotlinschool.persistent.entity.PublicService
 
 @Repository
-interface ServiceRepository : JpaRepository<PublicService, Long> {
-}
+interface PublicServiceRepository : JpaRepository<PublicService, Long>

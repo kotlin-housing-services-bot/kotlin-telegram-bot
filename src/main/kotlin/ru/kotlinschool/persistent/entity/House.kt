@@ -1,8 +1,14 @@
 package ru.kotlinschool.persistent.entity
 
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Entity
+import jakarta.persistence.OneToMany
 import jakarta.validation.constraints.NotNull
-import java.io.Serializable
 
 /**
  * Дом, обслуживаемый УК
@@ -23,12 +29,6 @@ data class House(
     @NotNull
     val address: String,
 
-    /**
-     * Ид группы в Telegram
-     */
-    @NotNull
-    val chatId: Long,
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
@@ -43,5 +43,5 @@ data class House(
      * Услуги
      */
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "house")
-    val services: List<PublicService> = ArrayList()
+    val publicServices: List<PublicService> = ArrayList()
 )

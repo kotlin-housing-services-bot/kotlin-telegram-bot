@@ -1,6 +1,14 @@
 package ru.kotlinschool.persistent.entity
 
-import jakarta.persistence.*
+import jakarta.persistence.CascadeType
+import jakarta.persistence.Column
+import jakarta.persistence.ManyToOne
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.Entity
+import jakarta.persistence.OneToMany
 import jakarta.validation.constraints.NotNull
 
 /**
@@ -47,5 +55,5 @@ data class Flat(
      * Услуги
      */
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "flat")
-    val MeterReadings: List<MeterReading> = ArrayList()
+    val meterReadings: List<MeterReading> = ArrayList()
 )

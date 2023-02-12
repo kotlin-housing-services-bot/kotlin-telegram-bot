@@ -6,9 +6,9 @@ import ru.kotlinschool.persistent.entity.Flat
 
 @Repository
 interface FlatRepository : JpaRepository<Flat, Long> {
-
     /**
      * Определить квартиры по ид пользователя Telegram
      */
     fun findByUserId(userId: Long): List<Flat>
+
 }

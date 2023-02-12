@@ -1,8 +1,13 @@
 package ru.kotlinschool.persistent.entity
 
-import jakarta.persistence.*
+import jakarta.persistence.Column
+import jakarta.persistence.Entity
+import jakarta.persistence.GeneratedValue
+import jakarta.persistence.GenerationType
+import jakarta.persistence.Id
+import jakarta.persistence.JoinColumn
+import jakarta.persistence.ManyToOne
 import jakarta.validation.constraints.NotNull
-import java.io.Serializable
 import java.time.LocalDate
 
 /**
@@ -11,7 +16,7 @@ import java.time.LocalDate
 @Entity
 data class MeterReading(
     /**
-     * Дом
+     * Квартира
      */
     @ManyToOne
     @JoinColumn(name = "flat_id")
@@ -22,9 +27,9 @@ data class MeterReading(
      * Услуга
      */
     @ManyToOne
-    @JoinColumn(name = "service_id")
+    @JoinColumn(name = "public_service_id")
     @NotNull
-    val service: PublicService,
+    val publicService: PublicService,
 
     /**
      * Значение

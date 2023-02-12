@@ -6,9 +6,9 @@ import ru.kotlinschool.persistent.entity.ManagementCompany
 
 @Repository
 interface ManagementCompanyRepository : JpaRepository<ManagementCompany, Long> {
-
     /**
      * Определить, является ли пользователь админом группы
      */
     fun findByUserId(userId: Long): ManagementCompany?
+
 }

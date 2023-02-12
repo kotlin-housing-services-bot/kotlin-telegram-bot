@@ -5,5 +5,4 @@ import org.springframework.stereotype.Repository
 import ru.kotlinschool.persistent.entity.House
 
 @Repository
-interface HouseRepository : JpaRepository<House, Long> {
-}
+interface HouseRepository : JpaRepository<House, Long>

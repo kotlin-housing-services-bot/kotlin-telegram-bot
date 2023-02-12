@@ -6,6 +6,4 @@ import ru.kotlinschool.persistent.entity.ManagementCompany
 import ru.kotlinschool.persistent.entity.Rate
 
 @Repository
-interface RateRepository : JpaRepository<Rate, Long> {
-
-}
+interface RateRepository : JpaRepository<Rate, Long>

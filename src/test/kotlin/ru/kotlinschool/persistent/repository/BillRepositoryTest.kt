@@ -5,13 +5,18 @@ import org.junit.jupiter.api.Test
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
+import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.Flat
 import ru.kotlinschool.persistent.entity.House
 import ru.kotlinschool.persistent.entity.ManagementCompany
+import java.io.File
+import java.nio.file.Files
+import java.nio.file.Paths
+
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class FlatRepositoryTest {
+class BillRepositoryTest {
 
     @Autowired
     private lateinit var managementCompanyRep: ManagementCompanyRepository
@@ -22,8 +27,11 @@ class FlatRepositoryTest {
     @Autowired
     private lateinit var flatRep: FlatRepository
 
+    @Autowired
+    private lateinit var billRep: BillRepository
+
     @Test
-    fun findByUserIdTest() {
+    fun findByUserIdSuccessTest() {
 
         val managementCompany = managementCompanyRep.save(
             ManagementCompany(
@@ -37,13 +45,24 @@ class FlatRepositoryTest {
                 address = "г. Москва, ул. Велозаводская, д. 6а"
             )
         )
-        flatRep.save(Flat(house = house, number = "1", area = 60.0, numberOfResidents = 2, userId = 3L))
-        val flat2 = flatRep.save(Flat(house = house, number = "3", area = 40.0, numberOfResidents = 1, userId = 4L))
+        val flat = flatRep.save(
+            Flat(
+                house = house,
+                number = "1",
+                area = 60.0,
+                numberOfResidents = 2, userId = 3L))
 
+        val bill = billRep.save(
+            Bill(
+                flat = flat,
+                mounth = 1,
+                File("src/test/resources/Bill_template.xlsx").readBytes()))
         // when
-        val foundEntity = flatRep.findByUserId(4L)
-        // then
-        Assertions.assertTrue { foundEntity.get(0) == flat2 }
+        val billEntity = billRep.findById(bill.id)
+        val path = Paths.get("src/test/resources/new.xlsx")
+        Files.write(path, billEntity.get().billData)
+
+        Assertions.assertTrue { billEntity.get() == bill}
     }
 
 }
