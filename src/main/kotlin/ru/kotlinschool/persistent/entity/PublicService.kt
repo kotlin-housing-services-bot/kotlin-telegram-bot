@@ -12,8 +12,6 @@ import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.OneToMany
 import jakarta.validation.constraints.NotNull
-import java.time.LocalDate
-
 
 /**
  * Коммунальные услуги
@@ -52,35 +50,6 @@ data class PublicService(
      */
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "publicService")
     val rates: List<Rate> = ArrayList()
-)
-
-
-@Entity
-data class Rate(
-    /**
-     * Услуга
-     */
-    @ManyToOne
-    @JoinColumn(name = "public_service_id")
-    @NotNull
-    val publicService: PublicService,
-
-    /**
-     * Тариф
-     */
-    @Column(name = "rate_sum")
-    @NotNull
-    val sum: Double,
-
-    /**
-     * Дата начала действия тарифа
-     */
-    @NotNull
-    val dateBegin: LocalDate,
-
-    @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    var id: Long = 0
 )
 
 /**
