@@ -14,7 +14,7 @@ import java.time.LocalDate
  * Коммунальные услуги
  */
 @Entity
-data class MeterReading(
+data class Metric(
     /**
      * Квартира
      */
@@ -35,14 +35,14 @@ data class MeterReading(
      * Значение
      */
     @NotNull
-    @Column(name = "meter_reading_value")
+    @Column(name = "metric_value")
     val value: Double,
 
     /**
      * Дата передачи показания
      */
     @NotNull
-    @Column(name = "meter_reading_date")
+    @Column(name = "metric_date")
     val actionDate: LocalDate,
 
     @Id

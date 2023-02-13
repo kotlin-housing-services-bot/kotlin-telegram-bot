@@ -7,7 +7,7 @@ import ru.kotlinschool.persistent.entity.ManagementCompany
 @Repository
 interface ManagementCompanyRepository : JpaRepository<ManagementCompany, Long> {
     /**
-     * Определить, является ли пользователь админом группы
+     * Найти УК по пользователю telegram
      */
     fun findByUserId(userId: Long): ManagementCompany?
 

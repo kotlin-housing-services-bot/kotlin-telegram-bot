@@ -22,17 +22,17 @@ insert into public_service(id, house_id, public_service_name, calculation_type) 
 insert into public_service(id, house_id, public_service_name, calculation_type) values (10, 2, 'Горячее водоснабжение, водоотведение и подогрев', 'BY_METER');
 
 --changeset TatianaDo:11
-insert into rate(id, public_service_id, rate_sum, date_begin) values (1, 1, 20.99, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (2, 2, 6.41, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (3, 3, 2279.36, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (4, 4, 90.9, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (5, 5, 230.45, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (1, 1, 20.99, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (2, 2, 6.41, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (3, 3, 2279.36, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (4, 4, 90.9, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (5, 5, 230.45, to_date('01.01.2023', 'dd.mm.yyyy'));
 
-insert into rate(id, public_service_id, rate_sum, date_begin) values (6, 6, 11.43, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (7, 7, 3.6, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (8, 8, 2055.94, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (9, 9, 46.91, to_date('01.01.2023', 'dd.mm.yyyy'));
-insert into rate(id, public_service_id, rate_sum, date_begin) values (10, 10, 150.71, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (6, 6, 11.43, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (7, 7, 3.6, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (8, 8, 2055.94, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (9, 9, 46.91, to_date('01.01.2023', 'dd.mm.yyyy'));
+insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (10, 10, 150.71, to_date('01.01.2023', 'dd.mm.yyyy'));
 
 
 

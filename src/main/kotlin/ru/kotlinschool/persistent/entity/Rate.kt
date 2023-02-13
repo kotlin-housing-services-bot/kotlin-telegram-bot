@@ -7,10 +7,13 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.ManyToOne
+import jakarta.persistence.Table
 import jakarta.validation.constraints.NotNull
+import java.math.BigDecimal
 import java.time.LocalDate
 
 @Entity
+@Table(name = "public_service_rate")
 data class Rate(
     /**
      * Услуга
@@ -25,7 +28,7 @@ data class Rate(
      */
     @Column(name = "rate_sum")
     @NotNull
-    val sum: Double,
+    val sum: BigDecimal,
 
     /**
      * Дата начала действия тарифа

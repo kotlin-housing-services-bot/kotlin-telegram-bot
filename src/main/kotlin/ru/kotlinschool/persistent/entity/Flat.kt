@@ -55,5 +55,5 @@ data class Flat(
      * Услуги
      */
     @OneToMany(cascade = [CascadeType.ALL], mappedBy = "flat")
-    val meterReadings: List<MeterReading> = ArrayList()
+    val metrics: List<Metric> = ArrayList()
 )

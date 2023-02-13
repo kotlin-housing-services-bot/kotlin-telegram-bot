@@ -10,13 +10,14 @@ import ru.kotlinschool.persistent.entity.House
 import ru.kotlinschool.persistent.entity.Flat
 import ru.kotlinschool.persistent.entity.PublicService
 import ru.kotlinschool.persistent.entity.CalculationType
-import ru.kotlinschool.persistent.entity.MeterReading
+import ru.kotlinschool.persistent.entity.Metric
 import ru.kotlinschool.persistent.entity.Rate
+import java.math.BigDecimal
 import java.time.LocalDate
 
 @DataJpaTest
 @AutoConfigureTestDatabase(replace = AutoConfigureTestDatabase.Replace.NONE)
-class MeterReadingRepositoryTest {
+class MetricRepositoryTest {
 
     @Autowired
     private lateinit var managementCompanyRep: ManagementCompanyRepository
@@ -34,7 +35,7 @@ class MeterReadingRepositoryTest {
     private lateinit var rateRep: RateRepository
 
     @Autowired
-    private lateinit var meterReadingRep: MeterReadingRepository
+    private lateinit var metricep: MetricRepository
 
     @Test
     fun findByFlatAndPublicServiceTest() {
@@ -62,27 +63,27 @@ class MeterReadingRepositoryTest {
                 calculationType = CalculationType.BY_METER
             )
         )
-        rateRep.save(Rate(publicService = service, sum = 3.6, dateBegin = LocalDate.now()))
-        val meterReading1 = meterReadingRep.save(
-            MeterReading(
+        rateRep.save(Rate(publicService = service, sum = BigDecimal.TEN, dateBegin = LocalDate.now()))
+        val meterReading1 = metricep.save(
+            Metric(
                 flat = flat, publicService = service, value = 99.5,
                 actionDate = LocalDate.now()
             )
         )
-        meterReadingRep.save(
-            MeterReading(
+        metricep.save(
+            Metric(
                 flat = flat, publicService = service, value = 77.5,
                 actionDate = LocalDate.now().minusDays(1)
             )
         )
 
         // when
-        val foundEntity = meterReadingRep.findFirstByFlatAndPublicServiceOrderByActionDateDesc(flat, service)
+        val foundEntity = metricep.findFirstByFlatAndPublicServiceOrderByActionDateDesc(flat, service)
         // then
         Assertions.assertTrue { foundEntity == meterReading1 }
 
         // when
-        val meterReadings = meterReadingRep.findByFlatAndPublicService(flat, service)
+        val meterReadings = metricep.findByFlatAndPublicService(flat, service)
         // then
         Assertions.assertTrue { meterReadings.size == 2 }
     }
