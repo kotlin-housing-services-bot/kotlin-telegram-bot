@@ -1,6 +1,6 @@
 package ru.kotlinschool.service
 
-import ru.kotlinschool.dto.FlatDto
+import org.springframework.stereotype.Service
 import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.PublicServiceDto
 import ru.kotlinschool.dto.UserDto

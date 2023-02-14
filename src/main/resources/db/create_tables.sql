@@ -91,10 +91,3 @@ create table if not exists bill
     constraint bill_fk foreign key(flat_id) references flat(id)
     );
 --rollback drop bill;
-
-
-
-
-
-
-
