@@ -17,6 +17,9 @@
 		<java.version>17</java.version>
 		<kotlin.version>1.7.22</kotlin.version>
 		<telegrambots.version>6.5.0</telegrambots.version>
+
+		<jdbc.driver>org.postgresql.Driver</jdbc.driver>
+		<jdbc.url>jdbc:postgresql://localhost:5432/db</jdbc.url>
 	</properties>
 	<dependencies>
 		<dependency>
@@ -98,6 +101,19 @@
 						<version>${kotlin.version}</version>
 					</dependency>
 				</dependencies>
+			</plugin>
+			<plugin>
+				<groupId>org.liquibase</groupId>
+				<artifactId>liquibase-maven-plugin</artifactId>
+				<version>4.5.0</version>
+				<configuration>
+					<changeLogFile>${basedir}/src/main/resources/db/changelog-master.yaml</changeLogFile>
+					<changeLogDirectory>${basedir}/src/main/resources/db/</changeLogDirectory>
+					<driver>${jdbc.driver}</driver>
+					<url>${jdbc.url}</url>
+					<username>test_user</username>
+					<password>test_user</password>
+				</configuration>
 			</plugin>
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
