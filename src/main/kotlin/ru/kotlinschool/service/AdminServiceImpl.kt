@@ -28,6 +28,13 @@ class AdminServiceImpl(
 ) : AdminService {
 
     /**
+     * Проверка, что пользователь является админом
+     */
+    override fun isAdmin(userId: Long): Boolean {
+        return managementCompanyRep.findByUserId(userId) != null
+    }
+
+    /**
      * Добавление УК
      */
     override fun registerManagementCompany(adminId: Long, name: String, inn: String) {
@@ -76,6 +83,16 @@ class AdminServiceImpl(
             .orElseThrow { EntityNotFoundException("Не найдена коммунальная услуга с ид = $publicServiceId") }
         rateRep.save(Rate(publicService, value, dateBegin))
     }
+
+    /**
+     * Все собственники квартир
+     */
+    override fun getUsers(houseId: Long, userId: Long): List<Long>{
+        return houseRep.findById(houseId)
+            .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
+            .flats.map { it.userId }
+    }
+
 
     /**
      * Посчитать квитанции
