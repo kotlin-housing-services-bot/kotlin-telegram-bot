@@ -19,13 +19,13 @@ import java.time.LocalDate
 
 
 @Service
-class UserServiceImpl(
-    @Autowired val managementCompanyRep: ManagementCompanyRepository,
-    @Autowired val houseRep: HouseRepository,
-    @Autowired val flatRep: FlatRepository,
-    @Autowired val publicServiceRep: PublicServiceRepository,
-    @Autowired val metricRep: MetricRepository,
-    @Autowired val billRep: BillRepository
+class UserServiceImpl @Autowired constructor(
+    private val managementCompanyRep: ManagementCompanyRepository,
+    private val houseRep: HouseRepository,
+    private val flatRep: FlatRepository,
+    private val publicServiceRep: PublicServiceRepository,
+    private val metricRep: MetricRepository,
+    private val billRep: BillRepository
 ) : UserService {
 
     /**

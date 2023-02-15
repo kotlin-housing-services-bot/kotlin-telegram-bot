@@ -1,7 +1,7 @@
 package ru.kotlinschool.dto
 
 data class HouseDto(
-    val houseId: Long,
+    val id: Long,
     val address: String
 )
 

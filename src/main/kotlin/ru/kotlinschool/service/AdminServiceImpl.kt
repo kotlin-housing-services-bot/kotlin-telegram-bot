@@ -18,13 +18,13 @@ import ru.kotlinschool.persistent.repository.RateRepository
 import java.math.BigDecimal
 import java.time.LocalDate
 
-class AdminServiceImpl(
-    @Autowired val managementCompanyRep: ManagementCompanyRepository,
-    @Autowired val houseRep: HouseRepository,
-    @Autowired val rateRep: RateRepository,
-    @Autowired val publicServiceRep: PublicServiceRepository,
-    @Autowired val metricRep: MetricRepository,
-    @Autowired val billRep: BillRepository
+class AdminServiceImpl @Autowired constructor(
+    private val managementCompanyRep: ManagementCompanyRepository,
+    private val houseRep: HouseRepository,
+    private val rateRep: RateRepository,
+    private val publicServiceRep: PublicServiceRepository,
+    private val metricRep: MetricRepository,
+    private val billRep: BillRepository
 ) : AdminService {
 
     /**
