@@ -1,7 +1,7 @@
 --liquibase formatted sql
 
 --changeset TatianaDo:8
-insert into management_company(id, company_name, inn, user_id) values (1, 'УК УМНЫЙ ДОМ', '111111111111', 48);
+insert into management_company(id, company_name, inn, user_id) values (1, 'УК УМНЫЙ ДОМ', '111111111111', 383036855);
 
 --changeset TatianaDo:9
 insert into house(id, management_company_id, address) values (1, 1, 'г. Москва, ул. Левобережная, д. 4, к. 16');
