@@ -80,9 +80,9 @@ class UserServiceImpl(
     /**
      * Получить квитанцию
      */
-    override fun getBill(flatId: Long, mounth: Int): ByteArray {
-        val bill = billRep.findBill(flatId, mounth)
-        bill ?: throw EntityNotFoundException("Не найдена квитанция за $mounth месяц с ид = $flatId")
+    override fun getBill(flatId: Long, month: Int): ByteArray {
+        val bill = billRep.findBill(flatId, month)
+        bill ?: throw EntityNotFoundException("Не найдена квитанция за $month месяц с ид = $flatId")
         return bill.billData
     }
 }

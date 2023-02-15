@@ -39,6 +39,6 @@ interface UserService {
     /**
      * Получить квитанцию
      */
-    fun getBill(flatId: Long, mounth: Int): ByteArray
+    fun getBill(flatId: Long, month: Int): ByteArray
 }
 

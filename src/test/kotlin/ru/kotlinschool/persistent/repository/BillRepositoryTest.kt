@@ -56,7 +56,7 @@ class BillRepositoryTest {
         bill = billRep.save(
             Bill(
                 flat = flat!!,
-                mounth = 1,
+                month = 1,
                 File("src/test/resources/Bill_template.xlsx").readBytes()
             )
         )

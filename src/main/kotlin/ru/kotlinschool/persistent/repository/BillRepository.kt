@@ -9,7 +9,7 @@ interface BillRepository : JpaRepository<Bill, Long>{
     /**
      * Найти квитанцию
      */
-    @Query("select t from Bill t join t.flat f where f.id = :flatId and t.mounth = :mounth")
-    fun findBill(@Param("flatId") flatId: Long, @Param("mounth") mounth: Int): Bill?
+    @Query("select t from Bill t join t.flat f where f.id = :flatId and t.month = :month")
+    fun findBill(@Param("flatId") flatId: Long, @Param("month") month: Int): Bill?
 }
 
