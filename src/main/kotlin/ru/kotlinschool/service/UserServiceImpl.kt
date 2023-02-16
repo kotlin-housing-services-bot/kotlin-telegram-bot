@@ -45,7 +45,7 @@ class UserServiceImpl @Autowired constructor(
     /**
      * Добавление квартиры
      */
-    override fun registerFlat(userId: Long, houseId: Long, flatNumber: String, area: Double, numberOfResidents: Int) {
+    override fun registerFlat(userId: Long, houseId: Long, flatNumber: String, area: Double, numberOfResidents: Long) {
         val house = houseRep.findById(houseId).orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
         flatRep.save(Flat(userId, house, flatNumber, area, numberOfResidents))
     }

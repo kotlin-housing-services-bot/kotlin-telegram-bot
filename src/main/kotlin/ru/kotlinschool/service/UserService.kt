@@ -19,7 +19,7 @@ interface UserService {
     /**
      * Добавление квартиры
      */
-    fun registerFlat(userId: Long, houseId: Long, flatNumber: String, area: Double, numberOfResidents: Int)
+    fun registerFlat(userId: Long, houseId: Long, flatNumber: String, area: Double, numberOfResidents: Long)
 
     /**
      * Получить все квартиры пользователя

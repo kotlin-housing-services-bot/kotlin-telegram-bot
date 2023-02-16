@@ -60,7 +60,8 @@ class MetricRepositoryTest {
         val service = serviceRep.save(
             PublicService(
                 house = house, name = "Свет",
-                calculationType = CalculationType.BY_METER
+                calculationType = CalculationType.BY_METER,
+                unit = "кВт.ч"
             )
         )
         rateRep.save(Rate(publicService = service, sum = BigDecimal.TEN, dateBegin = LocalDate.now()))

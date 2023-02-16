@@ -30,6 +30,7 @@ create table if not exists public_service
     house_id bigint not null,
     public_service_name varchar(50) not null,
     calculation_type varchar(25) not null,
+    unit varchar(25) not null,
     constraint public_service_uk unique(house_id, public_service_name),
     constraint public_service_fk foreign key(house_id) references house(id)
     );

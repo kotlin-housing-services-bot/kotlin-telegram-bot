@@ -17,6 +17,7 @@ import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.util.stream.Collectors
 
 class AdminServiceImpl @Autowired constructor(
     private val managementCompanyRep: ManagementCompanyRepository,
@@ -60,10 +61,10 @@ class AdminServiceImpl @Autowired constructor(
     /**
      * Добавление коммунальной услуги
      */
-    override fun registerPublicService(houseId: Long, name: String, calculationType: String) {
+    override fun registerPublicService(houseId: Long, name: String, calculationType: String, unit: String) {
         val house = houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-        publicServiceRep.save(PublicService(house, name, CalculationType.valueOf(calculationType)))
+        publicServiceRep.save(PublicService(house, name, CalculationType.valueOf(calculationType), unit))
     }
 
     /**
@@ -98,7 +99,10 @@ class AdminServiceImpl @Autowired constructor(
      * Посчитать квитанции
      */
     override fun calculateBills(houseId: Long) {
-        TODO("Not yet implemented")
+        val house = houseRep.findById(houseId)
+            .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
+        val rates = house.publicServices.stream()
+            .collect(Collectors.toMap(PublicService::id, PublicService::rates.));
     }
 
 }
