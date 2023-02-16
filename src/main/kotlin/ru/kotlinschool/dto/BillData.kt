@@ -2,6 +2,11 @@ package ru.kotlinschool.dto
 
 data class BillData(
     /**
+     * Год
+     */
+    val year: Int,
+
+    /**
      * Месяц
      */
     val month: Int,

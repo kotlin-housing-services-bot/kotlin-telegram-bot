@@ -1,12 +1,16 @@
 package ru.kotlinschool.service
 
 import org.springframework.beans.factory.annotation.Autowired
+import ru.kotlinschool.dto.BillData
+import ru.kotlinschool.dto.BillServiceData
 import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.PublicServiceDto
 import ru.kotlinschool.exception.EntityNotFoundException
+import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.persistent.entity.House
 import ru.kotlinschool.persistent.entity.ManagementCompany
+import ru.kotlinschool.persistent.entity.Metric
 import ru.kotlinschool.persistent.entity.PublicService
 import ru.kotlinschool.persistent.entity.Rate
 import ru.kotlinschool.persistent.repository.BillRepository
@@ -99,10 +103,32 @@ class AdminServiceImpl @Autowired constructor(
      * Посчитать квитанции
      */
     override fun calculateBills(houseId: Long) {
-        val house = houseRep.findById(houseId)
-            .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-        val rates = house.publicServices.stream()
-            .collect(Collectors.toMap(PublicService::id, PublicService::rates.));
+//        val house = houseRep.findById(houseId)
+//            .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
+//        val rates = house.publicServices.stream()
+//            .collect(Collectors.toMap(PublicService::id, PublicService::rates))
+//            .mapValues { (_, v) -> v.maxByOrNull { it.dateBegin }!!.sum }
+//        val year = LocalDate.now().year
+//        val month = LocalDate.now().monthValue
+//        house.flats.forEach {
+//            val metrics = it.metrics.filter { m -> m.actionDate.monthValue == month
+    //            || m.actionDate.monthValue == month - 1 }
+//            var content: ByteArray? = null
+//            val param = BillData(
+//                year,
+//                month,
+//                house.managementCompany.name,
+//                "${house.address}, кв. ${it.number}",
+//                it.area,
+//                it.numberOfResidents,
+//                house.publicServices.map { serv ->
+//                    BillServiceData(serv.name, serv.unit, serv.calculationType, rates[serv.id]!!,
+//                        it.metrics.filter { m -> m.publicService == serv }.map { m -> m.value })
+//                }
+//            )
+//            //Расчитываем квитанцию
+//            billRep.save(Bill(it, year, month, content!!))
+//        }
     }
 
 }

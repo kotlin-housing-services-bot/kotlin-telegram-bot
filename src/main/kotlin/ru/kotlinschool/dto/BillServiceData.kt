@@ -1,5 +1,6 @@
 package ru.kotlinschool.dto
 
+import ru.kotlinschool.persistent.entity.CalculationType
 import java.math.BigDecimal
 
 data class BillServiceData(
@@ -14,8 +15,18 @@ data class BillServiceData(
     val unit: String,
 
     /**
+     * Тип расчета
+     */
+    val calculationType: CalculationType,
+
+    /**
      * Тариф
      */
-    val rate: BigDecimal
+    val rate: BigDecimal,
+
+    /**
+     * Показания
+     */
+    var metrics: List<Double> = ArrayList()
 )
 
