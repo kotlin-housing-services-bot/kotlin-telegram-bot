@@ -11,6 +11,6 @@ data class CalculationResult(
     /**
      * Объем
      */
-    val valume: BigDecimal? = null
+    val volume: BigDecimal? = null
 
     )

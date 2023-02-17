@@ -31,7 +31,7 @@ class AreaCalculationStrategy : CalculationStrategy {
 class ResidentsCalculationStrategy : CalculationStrategy {
 
     override fun execute(data: CalculateData): CalculationResult {
-        return CalculationResult(BigDecimal.valueOf(data.numberOfResidents!!))
+        return CalculationResult(data.rate.multiply(BigDecimal.valueOf(data.numberOfResidents!!)))
     }
 
 }
