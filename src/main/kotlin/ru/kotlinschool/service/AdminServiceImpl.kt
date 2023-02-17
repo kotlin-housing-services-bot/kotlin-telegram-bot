@@ -21,6 +21,7 @@ import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
 import java.math.BigDecimal
 import java.time.LocalDate
+import java.time.temporal.TemporalAdjusters
 import java.util.stream.Collectors
 
 class AdminServiceImpl @Autowired constructor(
@@ -28,7 +29,6 @@ class AdminServiceImpl @Autowired constructor(
     private val houseRep: HouseRepository,
     private val rateRep: RateRepository,
     private val publicServiceRep: PublicServiceRepository,
-    private val metricRep: MetricRepository,
     private val billRep: BillRepository
 ) : AdminService {
 
@@ -103,32 +103,45 @@ class AdminServiceImpl @Autowired constructor(
      * Посчитать квитанции
      */
     override fun calculateBills(houseId: Long) {
-//        val house = houseRep.findById(houseId)
-//            .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-//        val rates = house.publicServices.stream()
-//            .collect(Collectors.toMap(PublicService::id, PublicService::rates))
-//            .mapValues { (_, v) -> v.maxByOrNull { it.dateBegin }!!.sum }
-//        val year = LocalDate.now().year
-//        val month = LocalDate.now().monthValue
-//        house.flats.forEach {
-//            val metrics = it.metrics.filter { m -> m.actionDate.monthValue == month
-    //            || m.actionDate.monthValue == month - 1 }
-//            var content: ByteArray? = null
-//            val param = BillData(
-//                year,
-//                month,
-//                house.managementCompany.name,
-//                "${house.address}, кв. ${it.number}",
-//                it.area,
-//                it.numberOfResidents,
-//                house.publicServices.map { serv ->
-//                    BillServiceData(serv.name, serv.unit, serv.calculationType, rates[serv.id]!!,
-//                        it.metrics.filter { m -> m.publicService == serv }.map { m -> m.value })
-//                }
-//            )
-//            //Расчитываем квитанцию
-//            billRep.save(Bill(it, year, month, content!!))
-//        }
+        val house = houseRep.findById(houseId)
+            .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
+        val rates = house.publicServices.stream()
+            .collect(Collectors.toMap(PublicService::id, PublicService::rates))
+            .mapValues { (_, v) -> v.maxByOrNull { it.dateBegin }!!.sum }
+        val year = LocalDate.now().year
+        val month = LocalDate.now().monthValue
+        house.flats.forEach {
+            val metricsCurrent: Map<PublicService, Double> = it.metrics
+                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) }
+                .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
+            val metricsPrevious: Map<PublicService, Double> = it.metrics
+                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now().minusMonths(1)) }
+                .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
+            val param = BillData(
+                year,
+                month,
+                house.managementCompany.name,
+                "${house.address}, кв. ${it.number}",
+                it.area,
+                it.numberOfResidents,
+                house.publicServices.map { serv ->
+                    BillServiceData(
+                        serv.name, serv.unit, serv.calculationType, rates[serv.id]!!, metricsCurrent[serv],
+                        metricsPrevious[serv]
+                    )
+                }
+            )
+            //Расчитываем квитанцию
+            var content: ByteArray? = byteArrayOf(10, 2, 15, 11)//вызов excelService
+            billRep.save(Bill(it, year, month, content!!))
+        }
+    }
+
+    private fun checkDateInMonth(inDate: LocalDate, dateOfMonth: LocalDate): Boolean {
+        return (inDate.isAfter(dateOfMonth.with(TemporalAdjusters.firstDayOfMonth()))
+                || inDate.isEqual(dateOfMonth.with(TemporalAdjusters.firstDayOfMonth())))
+                && (inDate.isBefore(dateOfMonth.with(TemporalAdjusters.lastDayOfMonth()))
+                || inDate.isEqual(dateOfMonth.with(TemporalAdjusters.lastDayOfMonth())))
     }
 
 }

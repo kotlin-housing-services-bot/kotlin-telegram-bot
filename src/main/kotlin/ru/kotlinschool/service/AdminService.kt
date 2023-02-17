@@ -51,6 +51,6 @@ interface AdminService {
     /**
      * Посчитать квитанции
      */
-    fun calculateBills(adminId: Long)
+    fun calculateBills(houseId: Long)
 
 }

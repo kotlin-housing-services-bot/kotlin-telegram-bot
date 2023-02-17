@@ -25,8 +25,13 @@ data class BillServiceData(
     val rate: BigDecimal,
 
     /**
-     * Показания
+     * Текущие показания
      */
-    var metrics: List<Double> = ArrayList()
+    var metricCurrent: Double? = null,
+
+    /**
+     * Предыдущие показания
+     */
+    var metricPrevious: Double? = null
 )
 
