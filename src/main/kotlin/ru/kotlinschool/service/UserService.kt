@@ -19,7 +19,8 @@ interface UserService {
     /**
      * Добавление квартиры
      */
-    fun registerFlat(userId: Long, houseId: Long, flatNumber: String, area: Double, numberOfResidents: Long)
+    fun registerFlat(userId: Long, chatId: Long, houseId: Long, flatNumber: String, area: Double,
+                     numberOfResidents: Long)
 
     /**
      * Получить все квартиры пользователя
@@ -34,7 +35,7 @@ interface UserService {
     /**
      * Добавить показания
      */
-    fun addMetric(flatId: Long, publicServiceId: Long, value: Double)
+    fun addMetric(flatId: Long, publicServiceId: Long, value: Double, isInit: Boolean = false)
 
     /**
      * Получить квитанцию

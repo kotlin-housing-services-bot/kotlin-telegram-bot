@@ -5,18 +5,17 @@ import ru.kotlinschool.dto.BillData
 import ru.kotlinschool.dto.BillServiceData
 import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.PublicServiceDto
+import ru.kotlinschool.dto.UserDto
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.persistent.entity.House
 import ru.kotlinschool.persistent.entity.ManagementCompany
-import ru.kotlinschool.persistent.entity.Metric
 import ru.kotlinschool.persistent.entity.PublicService
 import ru.kotlinschool.persistent.entity.Rate
 import ru.kotlinschool.persistent.repository.BillRepository
 import ru.kotlinschool.persistent.repository.HouseRepository
 import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
-import ru.kotlinschool.persistent.repository.MetricRepository
 import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
 import java.math.BigDecimal
@@ -83,19 +82,25 @@ class AdminServiceImpl @Autowired constructor(
     /**
      * Внесение тарифа для услуги
      */
-    override fun setRate(publicServiceId: Long, value: BigDecimal, dateBegin: LocalDate) {
+    override fun setRate(publicServiceId: Long, value: BigDecimal) {
         val publicService = publicServiceRep.findById(publicServiceId)
             .orElseThrow { EntityNotFoundException("Не найдена коммунальная услуга с ид = $publicServiceId") }
-        rateRep.save(Rate(publicService, value, dateBegin))
+        rateRep.save(
+            Rate(
+                publicService,
+                value,
+                LocalDate.now().plusMonths(1).with(TemporalAdjusters.firstDayOfMonth())
+            )
+        )
     }
 
     /**
      * Все собственники квартир
      */
-    override fun getUsers(houseId: Long, userId: Long): List<Long>{
+    override fun getUsers(houseId: Long): List<UserDto>{
         return houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-            .flats.map { it.userId }
+            .flats.map { UserDto(it.userId, it.chatId) }.distinct()
     }
 
 
@@ -111,11 +116,14 @@ class AdminServiceImpl @Autowired constructor(
         val year = LocalDate.now().year
         val month = LocalDate.now().monthValue
         house.flats.forEach {
-            val metricsCurrent: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) }
+            val currentMetrics: Map<PublicService, Double> = it.metrics
+                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) and !m.isInit}
                 .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
-            val metricsPrevious: Map<PublicService, Double> = it.metrics
+            val previousMetrics: Map<PublicService, Double> = it.metrics
                 .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now().minusMonths(1)) }
+                .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
+            val initMetrics: Map<PublicService, Double> = it.metrics
+                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) and m.isInit}
                 .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
             val param = BillData(
                 year,
@@ -126,8 +134,8 @@ class AdminServiceImpl @Autowired constructor(
                 it.numberOfResidents,
                 house.publicServices.map { serv ->
                     BillServiceData(
-                        serv.name, serv.unit, serv.calculationType, rates[serv.id]!!, metricsCurrent[serv],
-                        metricsPrevious[serv]
+                        serv.name, serv.unit, serv.calculationType, rates[serv.id]!!, currentMetrics[serv],
+                        previousMetrics[serv] ?: initMetrics[serv]
                     )
                 }
             )

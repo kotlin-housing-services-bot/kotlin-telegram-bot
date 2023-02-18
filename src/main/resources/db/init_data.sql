@@ -4,8 +4,8 @@
 insert into management_company(id, company_name, inn, user_id) values (1, 'УК УМНЫЙ ДОМ', '111111111111', 383036855);
 
 --changeset TatianaDo:9
-insert into house(id, management_company_id, address) values (1, 1, 'г. Москва, ул. Левобережная, д. 4, к. 16');
-insert into house(id, management_company_id, address) values (2, 1, 'г. Москва, ул. Петрозаводская, д. 15, к. 5');
+insert into house(id, management_company_id, address) values (1, 1, 'г. Москва, ул. Левобережная, д. 4');
+insert into house(id, management_company_id, address) values (2, 1, 'г. Москва, ул. Петрозаводская, д. 15');
 
 
 --changeset TatianaDo:10
