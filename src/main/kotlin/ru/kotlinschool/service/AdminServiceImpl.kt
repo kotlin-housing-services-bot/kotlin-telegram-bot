@@ -97,10 +97,10 @@ class AdminServiceImpl @Autowired constructor(
     /**
      * Все собственники квартир
      */
-    override fun getUsers(houseId: Long, userId: Long): List<UserDto>{
+    override fun getUsers(houseId: Long): List<UserDto>{
         return houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-            .flats.map { UserDto(it.userId, it.chatId) }
+            .flats.map { UserDto(it.userId, it.chatId) }.distinct()
     }
 
 

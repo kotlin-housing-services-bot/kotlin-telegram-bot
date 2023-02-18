@@ -3,6 +3,7 @@ package ru.kotlinschool.service
 import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
+import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import ru.kotlinschool.persistent.entity.Bill
@@ -77,6 +78,7 @@ class AdminServiceImplTest {
     fun setUp() {
         every { managementCompany.name } returns "УК УЮТ"
         every { houseRep.findById(any()) } returns Optional.of(house)
+        every { house.id } returns 1L
         every { house.address } returns "г. Москва, ул. Тверская, д. 13"
         every { house.managementCompany } returns managementCompany
         every { house.flats } returns listOf(flat1, flat2, flat3)
@@ -117,6 +119,12 @@ class AdminServiceImplTest {
         every { flat1.number } returns "1"
         every { flat2.number } returns "2"
         every { flat3.number } returns "3"
+        every { flat1.userId } returns 1L
+        every { flat2.userId } returns 1L
+        every { flat3.userId } returns 2L
+        every { flat1.chatId } returns 1L
+        every { flat2.chatId } returns 1L
+        every { flat3.chatId } returns 2L
         every { flat1.house } returns house
         every { flat2.house } returns house
         every { flat3.house } returns house
@@ -262,5 +270,11 @@ class AdminServiceImplTest {
     fun calculateBillsTest() {
         service.calculateBills(1L)
         verify(exactly = 3) { billRep.save(any()) }
+    }
+
+    @Test
+    fun getUsersTest(){
+        val users = service.getUsers(1L)
+        Assertions.assertTrue { users.size == 2 }
     }
 }

@@ -47,7 +47,7 @@ interface AdminService {
     /**
      * Все собственники квартир
      */
-    fun getUsers(houseId: Long, userId: Long): List<UserDto>
+    fun getUsers(houseId: Long): List<UserDto>
 
     /**
      * Посчитать квитанции
