@@ -3,6 +3,7 @@ package ru.kotlinschool.service
 import ru.kotlinschool.dto.FlatDto
 import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.PublicServiceDto
+import ru.kotlinschool.dto.UserDto
 import java.math.BigDecimal
 import java.time.LocalDate
 
@@ -41,12 +42,12 @@ interface AdminService {
     /**
      * Внесение тарифа для услуги
      */
-    fun setRate(publicServiceId: Long, value: BigDecimal, dateBegin: LocalDate)
+    fun setRate(publicServiceId: Long, value: BigDecimal)
 
     /**
      * Все собственники квартир
      */
-    fun getUsers(houseId: Long, userId: Long): List<Long>
+    fun getUsers(houseId: Long, userId: Long): List<UserDto>
 
     /**
      * Посчитать квитанции

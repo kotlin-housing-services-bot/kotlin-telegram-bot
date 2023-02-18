@@ -50,7 +50,9 @@ class BillRepositoryTest {
                 house = house,
                 number = "1",
                 area = 60.0,
-                numberOfResidents = 2, userId = 3L
+                numberOfResidents = 2,
+                userId = 3L,
+                chatId = 3L
             )
         )
         bill = billRep.save(

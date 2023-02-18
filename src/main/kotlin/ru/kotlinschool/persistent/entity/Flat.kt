@@ -22,6 +22,13 @@ data class Flat(
     @NotNull
     val userId: Long,
 
+
+    /**
+     * Ид чата в Telegram
+     */
+    @NotNull
+    val chatId: Long,
+
     /**
      * Дом
      */

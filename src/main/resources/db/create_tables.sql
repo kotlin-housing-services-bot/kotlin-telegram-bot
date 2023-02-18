@@ -57,6 +57,7 @@ create table if not exists flat
     area numeric,
     number_of_residents bigint,
     user_id bigint not null,
+    chat_id bigint not null,
     constraint flat_uk unique(house_id, flat_number),
     constraint flat_fk foreign key(house_id) references house(id)
     );
@@ -71,6 +72,7 @@ create table if not exists metric
     public_service_id bigint not null,
     metric_value numeric not null,
     metric_date date not null,
+    is_init boolean not null,
     constraint metric_uk unique(flat_id, public_service_id, metric_date),
     constraint metric_fk1 foreign key(flat_id) references flat(id),
     constraint metric_fk2 foreign key(public_service_id) references public_service(id)

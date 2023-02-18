@@ -37,8 +37,9 @@ class FlatRepositoryTest {
                 address = "г. Москва, ул. Велозаводская, д. 6а"
             )
         )
-        flatRep.save(Flat(house = house, number = "1", area = 60.0, numberOfResidents = 2, userId = 3L))
-        val flat2 = flatRep.save(Flat(house = house, number = "3", area = 40.0, numberOfResidents = 1, userId = 4L))
+        flatRep.save(Flat(house = house, number = "1", area = 60.0, numberOfResidents = 2, userId = 3L, chatId = 3L))
+        val flat2 = flatRep.save(Flat(house = house, number = "3", area = 40.0, numberOfResidents = 1, userId = 4L,
+            chatId = 4L))
 
         // when
         val foundEntity = flatRep.findByUserId(4L)

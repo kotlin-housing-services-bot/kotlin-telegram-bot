@@ -45,9 +45,9 @@ class UserServiceImpl @Autowired constructor(
     /**
      * Добавление квартиры
      */
-    override fun registerFlat(userId: Long, houseId: Long, flatNumber: String, area: Double, numberOfResidents: Long) {
+    override fun registerFlat(userId: Long, chatId: Long, houseId: Long, flatNumber: String, area: Double, numberOfResidents: Long) {
         val house = houseRep.findById(houseId).orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-        flatRep.save(Flat(userId, house, flatNumber, area, numberOfResidents))
+        flatRep.save(Flat(userId, chatId, house, flatNumber, area, numberOfResidents))
     }
 
     /**
@@ -69,12 +69,12 @@ class UserServiceImpl @Autowired constructor(
     /**
      * Добавить показания
      */
-    override fun addMetric(flatId: Long, publicServiceId: Long, value: Double) {
+    override fun addMetric(flatId: Long, publicServiceId: Long, value: Double, isInit: Boolean) {
         val flat = flatRep.findById(flatId)
             .orElseThrow { EntityNotFoundException("Не найдена квартира с ид = $flatId") }
         val publicService = publicServiceRep.findById(publicServiceId)
             .orElseThrow { EntityNotFoundException("Не найдена коммунальная услуга с ид = $publicServiceId") }
-        metricRep.save(Metric(flat, publicService, value, LocalDate.now()))
+        metricRep.save(Metric(flat, publicService, value, LocalDate.now(), isInit))
     }
 
     /**

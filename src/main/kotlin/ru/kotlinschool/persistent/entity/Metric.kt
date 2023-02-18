@@ -45,6 +45,12 @@ data class Metric(
     @Column(name = "metric_date")
     val actionDate: LocalDate,
 
+    /**
+     * Первоначальные показания
+     */
+    @NotNull
+    val isInit: Boolean = false,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0

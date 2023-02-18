@@ -53,13 +53,18 @@ class MetricRepositoryTest {
         )
         val flat = flatRep.save(
             Flat(
-                house = house, number = "1", area = 60.0, numberOfResidents = 2,
-                userId = 3L
+                house = house,
+                number = "1",
+                area = 60.0,
+                numberOfResidents = 2,
+                userId = 3L,
+                chatId = 3L
             )
         )
         val service = serviceRep.save(
             PublicService(
-                house = house, name = "Свет",
+                house = house,
+                name = "Свет",
                 calculationType = CalculationType.BY_METER,
                 unit = "кВт.ч"
             )
