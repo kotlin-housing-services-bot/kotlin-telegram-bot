@@ -6,6 +6,8 @@ import io.mockk.verify
 import org.junit.jupiter.api.Assertions
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.api.assertThrows
+import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.persistent.entity.Flat
@@ -41,6 +43,7 @@ class AdminServiceImplTest {
     private val service1 = mockk<PublicService>()
     private val service2 = mockk<PublicService>()
     private val service3 = mockk<PublicService>()
+    private val service4 = mockk<PublicService>()
     private val rate11 = mockk<Rate>()
     private val rate12 = mockk<Rate>()
     private val rate21 = mockk<Rate>()
@@ -66,7 +69,7 @@ class AdminServiceImplTest {
     private val metric314 = mockk<Metric>()
     private val metric321 = mockk<Metric>()
     private val metric322 = mockk<Metric>()
-    private val service = AdminServiceImpl(
+    private val adminService = AdminServiceImpl(
         managementCompanyRep,
         houseRep,
         rateRep,
@@ -77,7 +80,6 @@ class AdminServiceImplTest {
     @BeforeEach
     fun setUp() {
         every { managementCompany.name } returns "УК УЮТ"
-        every { houseRep.findById(any()) } returns Optional.of(house)
         every { house.id } returns 1L
         every { house.address } returns "г. Москва, ул. Тверская, д. 13"
         every { house.managementCompany } returns managementCompany
@@ -138,7 +140,16 @@ class AdminServiceImplTest {
         fillMetrics2()
         fillMetrics3()
         every { billRep.save(any()) } returns bill
-    }
+        every { houseRep.findById(any()) } returns Optional.of(house)
+        every { publicServiceRep.findById(1L) } returns Optional.of(service1)
+        every { publicServiceRep.findById(2L) } returns Optional.empty()
+        every { rateRep.save(any()) } returns rate11
+        every { publicServiceRep.save(any()) } returns service4
+        every { houseRep.save(any()) } returns house
+        every { managementCompanyRep.findByUserId(1L) } returns managementCompany
+        every {managementCompanyRep.save(any()) } returns managementCompany
+        every { houseRep.findHousesByAdminId(1L) } returns listOf(house)
+}
 
     fun fillMetrics1() {
         every { metric111.publicService } returns service1
@@ -214,17 +225,16 @@ class AdminServiceImplTest {
         every { metric221.isInit } returns false
         every { metric222.publicService } returns service2
         every { metric222.flat } returns flat2
-        every { metric222.value } returns 6.5
-        every { metric222.actionDate } returns LocalDate.now().with(TemporalAdjusters.lastDayOfMonth())
+        every { metric222.value } returns 6.0
+        every { metric222.actionDate } returns LocalDate.now()
         every { metric222.isInit } returns false
         every { metric223.publicService } returns service2
         every { metric223.flat } returns flat2
-        every { metric223.value } returns 4.5
-        every { metric223.actionDate } returns LocalDate.now().minusMonths(1)
-        every { metric223.isInit } returns false
+        every { metric223.value } returns 6.5
+        every { metric223.actionDate } returns LocalDate.now()
+        every { metric223.isInit } returns true
         every { flat2.metrics } returns listOf(
-            metric211, metric212, metric213, metric221, metric222,
-            metric223
+            metric211, metric212, metric213, metric221, metric222, metric223
         )
 
     }
@@ -268,13 +278,62 @@ class AdminServiceImplTest {
 
     @Test
     fun calculateBillsTest() {
-        service.calculateBills(1L)
+        adminService.calculateBills(1L)
         verify(exactly = 3) { billRep.save(any()) }
     }
 
     @Test
     fun getUsersTest(){
-        val users = service.getUsers(1L)
+        val users = adminService.getUsers(1L)
         Assertions.assertTrue { users.size == 2 }
+    }
+
+    @Test
+    fun setRateSuccessTest(){
+        adminService.setRate(1L, BigDecimal.TEN)
+        verify(exactly = 1) { rateRep.save(any()) }
+    }
+
+    @Test
+    fun setRateErrorTest(){
+        assertThrows<EntityNotFoundException> {
+            adminService.setRate(2L, BigDecimal.ONE)
+        }
+     }
+
+    @Test
+    fun getPublicServicesTest(){
+        val services = adminService.getPublicServices(1L)
+        Assertions.assertTrue { services.size == 3 }
+    }
+
+    @Test
+    fun registerPublicServiceTest(){
+        adminService.registerPublicService(4L, "Отопление", CalculationType.BY_FLAT_AREA.toString(), "м2")
+        verify(exactly = 1) { publicServiceRep.save(any()) }
+    }
+
+    @Test
+    fun registerHouseTest(){
+        adminService.registerHouse(1L, "Адрес")
+        verify(exactly = 1) { houseRep.save(any()) }
+    }
+
+    @Test
+    fun getHousesTest(){
+        val houses = adminService.getHouses(1L)
+        Assertions.assertTrue { houses.size == 1 }
+    }
+
+    @Test
+    fun registerManagementCompanyTest(){
+        adminService.registerManagementCompany(1L, "ТСЖ Наш дом", "11111111")
+        verify(exactly = 1) { managementCompanyRep.save(any()) }
+    }
+
+    @Test
+    fun isAdminTest(){
+        val isAdmin = adminService.isAdmin(1L)
+        Assertions.assertTrue { isAdmin }
     }
 }

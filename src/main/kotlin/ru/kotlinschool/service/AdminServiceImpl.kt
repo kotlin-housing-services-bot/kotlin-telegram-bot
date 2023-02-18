@@ -117,7 +117,7 @@ class AdminServiceImpl @Autowired constructor(
         val month = LocalDate.now().monthValue
         house.flats.forEach {
             val currentMetrics: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) }
+                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) and !m.isInit}
                 .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
             val previousMetrics: Map<PublicService, Double> = it.metrics
                 .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now().minusMonths(1)) }
