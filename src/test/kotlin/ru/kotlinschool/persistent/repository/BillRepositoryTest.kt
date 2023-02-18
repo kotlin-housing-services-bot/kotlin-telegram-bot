@@ -56,6 +56,7 @@ class BillRepositoryTest {
         bill = billRep.save(
             Bill(
                 flat = flat!!,
+                year = 2023,
                 month = 1,
                 File("src/test/resources/Bill_template.xlsx").readBytes()
             )
@@ -75,7 +76,7 @@ class BillRepositoryTest {
 
     @Test
     fun findBillTest() {
-        val findEntity = billRep.findBill(flat!!.id, 1)
+        val findEntity = billRep.findBill(flat!!.id, 2023, 1)
         Assertions.assertTrue { findEntity == bill}
     }
 

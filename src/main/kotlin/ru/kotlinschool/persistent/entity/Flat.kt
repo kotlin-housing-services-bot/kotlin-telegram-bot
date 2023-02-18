@@ -45,7 +45,7 @@ data class Flat(
     /**
      * Количество прописанных
      */
-    var numberOfResidents: Int? = null,
+    var numberOfResidents: Long? = null,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

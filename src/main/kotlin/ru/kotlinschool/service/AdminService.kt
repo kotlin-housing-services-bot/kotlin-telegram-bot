@@ -31,7 +31,7 @@ interface AdminService {
     /**
      * Добавление коммунальной услуги
      */
-    fun registerPublicService(houseId: Long, name: String, calculationType: String)
+    fun registerPublicService(houseId: Long, name: String, calculationType: String, unit: String)
 
     /**
      * Получить все услуги по дому
@@ -51,6 +51,6 @@ interface AdminService {
     /**
      * Посчитать квитанции
      */
-    fun calculateBills(adminId: Long)
+    fun calculateBills(houseId: Long)
 
 }

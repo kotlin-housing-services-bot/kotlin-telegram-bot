@@ -21,6 +21,13 @@ data class Bill(
     val flat: Flat,
 
     /**
+     * Год
+     */
+    @NotNull
+    @Column(name = "bill_year")
+    val year: Int,
+
+    /**
      * Месяц
      */
     @NotNull
