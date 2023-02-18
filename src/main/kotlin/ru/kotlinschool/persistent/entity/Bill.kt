@@ -1,5 +1,6 @@
 package ru.kotlinschool.persistent.entity
 
+import jakarta.persistence.Column
 import jakarta.persistence.ManyToOne
 import jakarta.persistence.JoinColumn
 import jakarta.persistence.GenerationType
@@ -20,10 +21,18 @@ data class Bill(
     val flat: Flat,
 
     /**
+     * Год
+     */
+    @NotNull
+    @Column(name = "bill_year")
+    val year: Int,
+
+    /**
      * Месяц
      */
     @NotNull
-    val mounth: Int,
+    @Column(name = "bill_month")
+    val month: Int,
 
     /**
      * Квитанция
@@ -42,7 +51,7 @@ data class Bill(
         other as Bill
 
         if (flat != other.flat) return false
-        if (mounth != other.mounth) return false
+        if (month != other.month) return false
         if (!billData.contentEquals(other.billData)) return false
 
         return true
@@ -50,7 +59,7 @@ data class Bill(
 
     override fun hashCode(): Int {
         var result = flat.hashCode()
-        result = 31 * result + mounth
+        result = 31 * result + month
         result = 31 * result + billData.contentHashCode()
         return result
     }

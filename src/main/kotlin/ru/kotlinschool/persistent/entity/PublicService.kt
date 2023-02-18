@@ -41,6 +41,13 @@ data class PublicService(
     @Enumerated(value = EnumType.STRING)
     val calculationType: CalculationType,
 
+    /**
+     * Единица измерения
+     *
+     */
+    @NotNull
+    val unit: String,
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     var id: Long = 0,
