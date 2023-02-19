@@ -5,8 +5,8 @@ import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardMar
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboardRemove
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardButton
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.buttons.KeyboardRow
-import ru.kotlinschool.dto.FlatDto
-import ru.kotlinschool.dto.HouseDto
+import ru.kotlinschool.data.FlatData
+import ru.kotlinschool.data.HouseData
 
 
 val CANCEL_KEYBOARD: ReplyKeyboard = ReplyKeyboardMarkup().apply {
@@ -17,7 +17,7 @@ val CANCEL_KEYBOARD: ReplyKeyboard = ReplyKeyboardMarkup().apply {
 val CLEARED_KEYBOARD: ReplyKeyboard = ReplyKeyboardRemove().apply { removeKeyboard = true }
 
 val REQUEST_BILL_KEYBOARD: ReplyKeyboard = ReplyKeyboardMarkup().apply {
-//    Month.values()
+
     keyboard = listOf(
         KeyboardRow(
             listOf(KeyboardButton("Январь - 1"), KeyboardButton("Февраль - 2"), KeyboardButton("Март - 3"))
@@ -63,13 +63,13 @@ val NO_FLAT_USER: ReplyKeyboard = ReplyKeyboardMarkup().apply {
     resizeKeyboard = true
 }
 
-fun createSelectFlatKeyboard(flats: List<FlatDto>): ReplyKeyboard = ReplyKeyboardMarkup().apply {
+fun createSelectFlatKeyboard(flats: List<FlatData>): ReplyKeyboard = ReplyKeyboardMarkup().apply {
     keyboard = listOf(KeyboardRow(listOf(KeyboardButton(Command.Cancel.commandText)))) +
             flats.map { KeyboardRow(listOf(KeyboardButton(it.address))) }
     resizeKeyboard = true
 }
 
-fun createHousesKeyboard(houses: List<HouseDto>): ReplyKeyboard = ReplyKeyboardMarkup().apply {
+fun createHousesKeyboard(houses: List<HouseData>): ReplyKeyboard = ReplyKeyboardMarkup().apply {
     keyboard = listOf(KeyboardRow(listOf(KeyboardButton(Command.Cancel.commandText)))) +
             houses.map { KeyboardRow(listOf(KeyboardButton(it.address))) }
     resizeKeyboard = true

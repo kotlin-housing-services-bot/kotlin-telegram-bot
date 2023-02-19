@@ -1,16 +1,15 @@
 package ru.kotlinschool.bot
 
 import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.kotlinschool.bot.handlers.AdminActionsHandler
 import ru.kotlinschool.bot.handlers.UserActionsHandler
-import ru.kotlinschool.bot.handlers.entities.HandlerResponse
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.ui.CLEARED_KEYBOARD
 import ru.kotlinschool.bot.ui.Command
 import ru.kotlinschool.bot.ui.START_KEYBOARD_ADMIN
@@ -23,21 +22,21 @@ import ru.kotlinschool.bot.ui.welcomeMessage
  * Бот для обработки действия пользователя. Входная точка в приложение.
  * Рулит входящими, исходящими сообщениями и клавиатурой.
  *
- * @see UserSessionManager
+ * @see SessionManager
  */
 @Component
 class HousingBot @Autowired constructor(
     private val userActionsHandler: UserActionsHandler,
     private val adminActionsHandler: AdminActionsHandler,
-    private val userSessionManager: UserSessionManager,
-) : TelegramLongPollingBot("6105576274:AAEBjUYM_paN095NjTMJXyTHQtIrkwVkYgo") {
+    private val sessionManager: SessionManager,
+    @Value("\${telegram.bot.token}") botNameValue: String
+) : TelegramLongPollingBot(botNameValue) {
 
-    private val botName: String = "УК Умный Дом"
-
-    override fun getBotUsername(): String = botName
+    override fun getBotUsername(): String = "УК Умный Дом"
 
     override fun onUpdateReceived(update: Update) {
         if (update.message != null) {
+
             val isAdmin = adminActionsHandler.checkAdmin(update.message.from.id)
 
             if (update.message.isCommand) {
@@ -68,7 +67,7 @@ class HousingBot @Autowired constructor(
                 }.let(::execute)
             }
             Command.Stop.commandText -> {
-                userSessionManager.resetUserSession(message.from.id)
+                sessionManager.resetUserSession(message.from.id)
 
                 SendMessage().apply {
                     chatId = message.chatId.toString()
@@ -92,14 +91,12 @@ class HousingBot @Autowired constructor(
      * @param message — Входное сообщение
      * @param isAdmin — Админ-пользователь
      *
-     * @see AdminActionsHandler — обработка текстовых действий для админа
-     * @see UserActionsHandler — обработка текстовых действий для обычного пользователя
      */
     private fun handleTextAction(message: Message, isAdmin: Boolean = false) {
-        val messageText = message.text
 
-        if (messageText.contains(Command.Cancel.commandText)) {
-            userSessionManager.resetUserSession(message.from.id)
+        if (message.text.contains(Command.Cancel.commandText)) {
+
+            sessionManager.resetUserSession(message.from.id)
 
             SendMessage().apply {
                 chatId = message.chatId.toString()
@@ -107,27 +104,45 @@ class HousingBot @Autowired constructor(
                 replyMarkup = CLEARED_KEYBOARD
             }.let(::execute)
 
+        } else if (isAdmin) {
+            handleTextActionAdmin(message)
         } else {
-            if (isAdmin) {
-                adminActionsHandler.handle(message) { response ->
-                    when (response) {
-                        is HandlerResponse.Basic -> response.messages.forEach(::execute)
+            handleTextMessageUser(message)
+        }
+    }
 
-                        is HandlerResponse.Broadcast -> response.run {
-                            broadcastMessages.forEach { (message, document) ->
-                                execute(message)
-                                execute(document)
-                            }
-                            response.messages.forEach(::execute)
-                        }
+    /**
+     * Обработка основных действий админа в текстовом формате
+     *
+     * @param message — Входное сообщение
+     * @see AdminActionsHandler — обработка текстовых действий для админа
+     */
+    private fun handleTextActionAdmin(message: Message) {
+        adminActionsHandler.handle(message) { response ->
+            when (response) {
+                is HandlerResponse.Basic -> response.messages.forEach(::execute)
+
+                is HandlerResponse.Broadcast -> response.run {
+                    broadcastMessages.forEach { (message, document) ->
+                        execute(message)
+                        execute(document)
                     }
+                    response.messages.forEach(::execute)
                 }
-            } else {
-                userActionsHandler.handle(message) { response ->
-                    if (response is HandlerResponse.Basic) {
-                        response.messages.forEach(::execute)
-                    }
-                }
+            }
+        }
+    }
+
+    /**
+     * Обработка основных действий пользователя в текстовом формате
+     *
+     * @param message — Входное сообщение
+     * @see UserActionsHandler — обработка текстовых действий для обычного пользователя
+     */
+    private fun handleTextMessageUser(message: Message) {
+        userActionsHandler.handle(message) { response ->
+            if (response is HandlerResponse.Basic) {
+                response.messages.forEach(::execute)
             }
         }
     }

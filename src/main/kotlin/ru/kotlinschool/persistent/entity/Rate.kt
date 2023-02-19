@@ -14,7 +14,7 @@ import java.time.LocalDate
 
 @Entity
 @Table(name = "public_service_rate")
-data class Rate(
+class Rate(
     /**
      * Услуга
      */

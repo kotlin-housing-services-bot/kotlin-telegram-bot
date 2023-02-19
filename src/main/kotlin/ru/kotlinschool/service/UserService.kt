@@ -1,20 +1,20 @@
 package ru.kotlinschool.service
 
-import ru.kotlinschool.dto.FlatDto
-import ru.kotlinschool.dto.HouseDto
-import ru.kotlinschool.dto.ManagementCompanyDto
-import ru.kotlinschool.dto.PublicServiceDto
+import ru.kotlinschool.data.FlatData
+import ru.kotlinschool.data.HouseData
+import ru.kotlinschool.data.ManagementCompanyData
+import ru.kotlinschool.data.PublicServiceData
 
 interface UserService {
     /**
      * Возвращает все УК
      */
-    fun getManagementCompanies(): List<ManagementCompanyDto>
+    fun getManagementCompanies(): List<ManagementCompanyData>
 
     /**
      * Возвращает все дома УК
      */
-    fun getHouses(managementCompanyId: Long): List<HouseDto>
+    fun getHouses(managementCompanyId: Long): List<HouseData>
 
     /**
      * Добавление квартиры
@@ -25,12 +25,12 @@ interface UserService {
     /**
      * Получить все квартиры пользователя
      */
-    fun getFlats(userId: Long): List<FlatDto>
+    fun getFlats(userId: Long): List<FlatData>
 
     /**
      * Получить все услуги по квартире
      */
-    fun getPublicServices(flatId: Long): List<PublicServiceDto>
+    fun getPublicServices(flatId: Long): List<PublicServiceData>
 
     /**
      * Добавить показания

@@ -8,11 +8,13 @@
 		<version>3.0.2</version>
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
-	<groupId>com.example</groupId>
+
+	<groupId>ru.kotlinschool</groupId>
 	<artifactId>kotlin-telegram-bot</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>kotlin-telegram-bot</name>
 	<description>Telegram bot</description>
+
 	<properties>
 		<java.version>17</java.version>
 		<kotlin.version>1.7.22</kotlin.version>
@@ -21,8 +23,16 @@
 		<mockk.version>1.13.4</mockk.version>
 		<jdbc.driver>org.postgresql.Driver</jdbc.driver>
 		<jdbc.url>jdbc:postgresql://localhost:5432/db</jdbc.url>
+		<liquidbase.plugin.version>4.5.0</liquidbase.plugin.version>
+		<antrun.plugin.version>1.8</antrun.plugin.version>
+		<detekt-cli.version>1.22.0</detekt-cli.version>
 	</properties>
+
 	<dependencies>
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-validation</artifactId>
+		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-web</artifactId>
@@ -30,11 +40,6 @@
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-data-jpa</artifactId>
-		</dependency>
-		<dependency>
-			<groupId>org.postgresql</groupId>
-			<artifactId>postgresql</artifactId>
-			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>com.fasterxml.jackson.module</groupId>
@@ -52,6 +57,11 @@
 			<groupId>org.telegram</groupId>
 			<artifactId>telegrambots-spring-boot-starter</artifactId>
 			<version>${telegrambots.version}</version>
+		</dependency>
+		<dependency>
+			<groupId>org.postgresql</groupId>
+			<artifactId>postgresql</artifactId>
+			<scope>runtime</scope>
 		</dependency>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -118,7 +128,7 @@
 			<plugin>
 				<groupId>org.liquibase</groupId>
 				<artifactId>liquibase-maven-plugin</artifactId>
-				<version>4.5.0</version>
+				<version>${liquidbase.plugin.version}</version>
 				<configuration>
 					<changeLogFile>${basedir}/src/main/resources/db/changelog-master.yaml</changeLogFile>
 					<changeLogDirectory>${basedir}/src/main/resources/db/</changeLogDirectory>
@@ -131,7 +141,7 @@
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>
 				<artifactId>maven-antrun-plugin</artifactId>
-				<version>1.8</version>
+				<version>${antrun.plugin.version}</version>
 				<executions>
 					<execution>
 						<!-- This can be run separately with mvn antrun:run@detekt -->
@@ -163,7 +173,7 @@
 					<dependency>
 						<groupId>io.gitlab.arturbosch.detekt</groupId>
 						<artifactId>detekt-cli</artifactId>
-						<version>1.22.0</version>
+						<version>${detekt-cli.version}</version>
 					</dependency>
 				</dependencies>
 			</plugin>
