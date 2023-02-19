@@ -7,6 +7,7 @@ import jakarta.persistence.GenerationType
 import jakarta.persistence.Id
 import jakarta.persistence.GeneratedValue
 import jakarta.persistence.Entity
+import jakarta.persistence.FetchType
 import jakarta.persistence.OneToMany
 import jakarta.validation.constraints.NotNull
 
@@ -36,12 +37,12 @@ data class House(
     /**
      * Квартиры
      */
-    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "house")
+    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "house", fetch = FetchType.EAGER)
     val flats: List<Flat> = ArrayList(),
 
     /**
      * Услуги
      */
-    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "house")
+    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "house", fetch = FetchType.EAGER)
     val publicServices: List<PublicService> = ArrayList()
 )

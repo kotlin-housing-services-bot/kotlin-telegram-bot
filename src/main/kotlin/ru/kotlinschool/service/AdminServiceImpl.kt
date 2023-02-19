@@ -3,6 +3,7 @@ package ru.kotlinschool.service
 import org.springframework.beans.factory.annotation.Autowired
 import ru.kotlinschool.dto.BillData
 import ru.kotlinschool.dto.BillServiceData
+import org.springframework.stereotype.Service
 import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.PublicServiceDto
 import ru.kotlinschool.dto.UserDto
@@ -24,6 +25,7 @@ import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
 import java.util.stream.Collectors
 
+@Service
 class AdminServiceImpl @Autowired constructor(
     private val managementCompanyRep: ManagementCompanyRepository,
     private val houseRep: HouseRepository,
@@ -77,7 +79,7 @@ class AdminServiceImpl @Autowired constructor(
     override fun getPublicServices(houseId: Long): List<PublicServiceDto> {
         return houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-            .publicServices.map { PublicServiceDto(it.id, it.name) }
+            .publicServices.map { PublicServiceDto(it.id, it.name, it.calculationType) }
     }
 
     /**
@@ -162,5 +164,4 @@ class AdminServiceImpl @Autowired constructor(
         return (inDate.isAfter(firstDayOfMonth) || inDate.isEqual(firstDayOfMonth))
                 && (inDate.isBefore(lastDayOfMonth) || inDate.isEqual(lastDayOfMonth))
     }
-
 }

@@ -7,9 +7,11 @@ import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.ManagementCompanyDto
 import ru.kotlinschool.dto.PublicServiceDto
 import ru.kotlinschool.exception.EntityNotFoundException
+import ru.kotlinschool.persistent.entity.Client
 import ru.kotlinschool.persistent.entity.Flat
 import ru.kotlinschool.persistent.entity.Metric
 import ru.kotlinschool.persistent.repository.BillRepository
+import ru.kotlinschool.persistent.repository.ClientRepository
 import ru.kotlinschool.persistent.repository.FlatRepository
 import ru.kotlinschool.persistent.repository.HouseRepository
 import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
@@ -25,14 +27,15 @@ class UserServiceImpl @Autowired constructor(
     private val flatRep: FlatRepository,
     private val publicServiceRep: PublicServiceRepository,
     private val metricRep: MetricRepository,
-    private val billRep: BillRepository
+    private val billRep: BillRepository,
+    private val clientRepository: ClientRepository
 ) : UserService {
 
     /**
      * Возвращает все УК
      */
     override fun getManagementCompanies(): List<ManagementCompanyDto> {
-       return managementCompanyRep.findAll().map { ManagementCompanyDto(it.id, it.name) }
+        return managementCompanyRep.findAll().map { ManagementCompanyDto(it.id, it.name) }
     }
 
     /**
@@ -68,7 +71,7 @@ class UserServiceImpl @Autowired constructor(
     override fun getPublicServices(flatId: Long): List<PublicServiceDto> {
         return flatRep.findById(flatId)
             .orElseThrow { EntityNotFoundException("Не найдена квартира с ид = $flatId") }
-            .house.publicServices.map { PublicServiceDto(it.id, it.name) }
+            .house.publicServices.map { PublicServiceDto(it.id, it.name, it.calculationType) }
     }
 
     /**
