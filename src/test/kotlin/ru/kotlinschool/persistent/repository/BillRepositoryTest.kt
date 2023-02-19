@@ -69,7 +69,7 @@ class BillRepositoryTest {
     fun findByIdTest() {
             // when
         val findEntity = billRep.findById(bill!!.id)
-        val path = Paths.get("src/test/resources/new.xlsx")
+        val path = Paths.get("src/test/resources/BillRepositoryTest.xlsx")
         Files.write(path, findEntity.get().billData)
 
         Assertions.assertTrue { findEntity.get() == bill}
