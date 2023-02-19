@@ -2,10 +2,10 @@ package ru.kotlinschool.service
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
-import ru.kotlinschool.dto.FlatDto
-import ru.kotlinschool.dto.HouseDto
-import ru.kotlinschool.dto.ManagementCompanyDto
-import ru.kotlinschool.dto.PublicServiceDto
+import ru.kotlinschool.data.FlatData
+import ru.kotlinschool.data.HouseData
+import ru.kotlinschool.data.ManagementCompanyData
+import ru.kotlinschool.data.PublicServiceData
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.persistent.entity.Flat
 import ru.kotlinschool.persistent.entity.Metric
@@ -31,15 +31,15 @@ class UserServiceImpl @Autowired constructor(
     /**
      * Возвращает все УК
      */
-    override fun getManagementCompanies(): List<ManagementCompanyDto> {
-        return managementCompanyRep.findAll().map { ManagementCompanyDto(it.id, it.name) }
+    override fun getManagementCompanies(): List<ManagementCompanyData> {
+        return managementCompanyRep.findAll().map { ManagementCompanyData(it.id, it.name) }
     }
 
     /**
      * Возвращает все дома УК
      */
-    override fun getHouses(managementCompanyId: Long): List<HouseDto> {
-        return houseRep.findHousesByManagementCompany(managementCompanyId).map { HouseDto(it.id, it.address) }
+    override fun getHouses(managementCompanyId: Long): List<HouseData> {
+        return houseRep.findHousesByManagementCompany(managementCompanyId).map { HouseData(it.id, it.address) }
     }
 
     /**
@@ -58,17 +58,17 @@ class UserServiceImpl @Autowired constructor(
     /**
      * Получить все квартиры пользователя
      */
-    override fun getFlats(userId: Long): List<FlatDto> {
-        return flatRep.findByUserId(userId).map { FlatDto(it.id, "${it.house.address}, кв. ${it.number}") }
+    override fun getFlats(userId: Long): List<FlatData> {
+        return flatRep.findByUserId(userId).map { FlatData(it.id, "${it.house.address}, кв. ${it.number}") }
     }
 
     /**
      * Получить все услуги по квартире
      */
-    override fun getPublicServices(flatId: Long): List<PublicServiceDto> {
+    override fun getPublicServices(flatId: Long): List<PublicServiceData> {
         return flatRep.findById(flatId)
             .orElseThrow { EntityNotFoundException("Не найдена квартира с ид = $flatId") }
-            .house.publicServices.map { PublicServiceDto(it.id, it.name, it.calculationType) }
+            .house.publicServices.map { PublicServiceData(it.id, it.name, it.calculationType) }
     }
 
     /**

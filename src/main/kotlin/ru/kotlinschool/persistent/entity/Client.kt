@@ -7,7 +7,7 @@ import jakarta.persistence.Id
 import jakarta.validation.constraints.NotNull
 
 @Entity
-data class Client(
+class Client(
 
     /**
      * Ид чата администратора в Telegram

@@ -1,4 +1,4 @@
-package ru.kotlinschool.bot.handlers
+package ru.kotlinschool.util
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard
@@ -12,20 +12,22 @@ import ru.kotlinschool.bot.ui.housesMessageTemplate
 import ru.kotlinschool.bot.ui.preserveDataOrderMessage
 import ru.kotlinschool.bot.ui.ratesUpdateFormatMessage
 import ru.kotlinschool.bot.ui.ratesUpdateHeaderMessage
-import ru.kotlinschool.dto.HouseDto
-import ru.kotlinschool.dto.PublicServiceDto
+import ru.kotlinschool.data.HouseData
+import ru.kotlinschool.data.PublicServiceData
 
-fun createHousesMessages(chatId: Long, houses: List<HouseDto>) =
+private val LINE_SEPARATOR = System.lineSeparator()
+
+fun createHousesMessages(chatId: Long, houses: List<HouseData>) =
     mutableListOf<SendMessage>().apply {
         add(buildAnswerMessage(chatId, flatRegistrationMessageHeaderMessage))
         add(buildAnswerMessage(chatId, preserveDataOrderMessage))
         add(buildAnswerMessage(chatId, flatRegistrationMessage))
 
-        val housesMessage = houses.joinToString("\n", "$housesMessageTemplate\n") { "${it.id} - ${it.address}" }
+        val housesMessage = houses.joinToString(LINE_SEPARATOR, "$housesMessageTemplate$LINE_SEPARATOR") { "${it.id} - ${it.address}" }
         add(buildAnswerMessage(chatId, housesMessage, CANCEL_KEYBOARD))
     }
 
-fun createPublicServicesMessages(chatId: Long, publicServices: List<PublicServiceDto>) =
+fun createPublicServicesMessages(chatId: Long, publicServices: List<PublicServiceData>) =
     mutableListOf(
         buildAnswerMessage(chatId, enterMeterReadingsHeaderMessage),
         buildAnswerMessage(chatId, preserveDataOrderMessage),
@@ -35,7 +37,7 @@ fun createPublicServicesMessages(chatId: Long, publicServices: List<PublicServic
         add(buildAnswerMessage(chatId, publicServicesMessage, CANCEL_KEYBOARD))
     }
 
-fun createRatesUpdateMessages(chatId: Long, publicServices: List<PublicServiceDto>) =
+fun createRatesUpdateMessages(chatId: Long, publicServices: List<PublicServiceData>) =
     mutableListOf(
         buildAnswerMessage(chatId, ratesUpdateHeaderMessage),
         buildAnswerMessage(chatId, preserveDataOrderMessage),
@@ -45,8 +47,8 @@ fun createRatesUpdateMessages(chatId: Long, publicServices: List<PublicServiceDt
         add(buildAnswerMessage(chatId, publicServicesMessage, CANCEL_KEYBOARD))
     }
 
-fun createPublicServiceListMessage(publicServices: List<PublicServiceDto>) =
-    publicServices.withIndex().joinToString(separator = "\n") { "${it.index + 1}. ${it.value.name}" }
+fun createPublicServiceListMessage(publicServices: List<PublicServiceData>) =
+    publicServices.withIndex().joinToString(LINE_SEPARATOR) { "${it.index + 1}. ${it.value.name}" }
 
 fun buildAnswerMessage(
     targetChatId: Long,

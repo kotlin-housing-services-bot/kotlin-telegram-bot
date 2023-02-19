@@ -16,7 +16,7 @@ import jakarta.validation.constraints.NotNull
  * Данные по квартире
  */
 @Entity
-data class Flat(
+class Flat(
     /**
      * Ид пользователя-администратора в Telegram
      */
@@ -62,6 +62,6 @@ data class Flat(
     /**
      * Услуги
      */
-    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "flat")
+    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "flat", fetch = FetchType.EAGER)
     val metrics: List<Metric> = ArrayList()
 )

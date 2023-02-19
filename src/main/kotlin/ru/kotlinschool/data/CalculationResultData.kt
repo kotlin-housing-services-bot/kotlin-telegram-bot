@@ -1,8 +1,8 @@
-package ru.kotlinschool.dto
+package ru.kotlinschool.data
 
 import java.math.BigDecimal
 
-data class CalculationResult(
+data class CalculationResultData(
     /**
      * Сумма
      */
@@ -13,4 +13,4 @@ data class CalculationResult(
      */
     val volume: BigDecimal? = null
 
-    )
+)

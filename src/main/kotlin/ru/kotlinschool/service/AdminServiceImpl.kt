@@ -1,12 +1,13 @@
 package ru.kotlinschool.service
 
 import org.springframework.beans.factory.annotation.Autowired
-import ru.kotlinschool.dto.BillData
-import ru.kotlinschool.dto.BillServiceData
 import org.springframework.stereotype.Service
-import ru.kotlinschool.dto.HouseDto
-import ru.kotlinschool.dto.PublicServiceDto
-import ru.kotlinschool.dto.UserDto
+import ru.kotlinschool.data.BillData
+import ru.kotlinschool.data.BillServiceData
+import ru.kotlinschool.data.BillServiceResultData
+import ru.kotlinschool.data.HouseData
+import ru.kotlinschool.data.PublicServiceData
+import ru.kotlinschool.data.UserData
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.CalculationType
@@ -53,8 +54,8 @@ class AdminServiceImpl @Autowired constructor(
     /**
      * Возвращает все дома УК(одному администратору соответствует одна УК)
      */
-    override fun getHouses(adminId: Long): List<HouseDto> {
-        return houseRep.findHousesByAdminId(adminId).map { HouseDto(it.id, it.address) }
+    override fun getHouses(adminId: Long): List<HouseData> {
+        return houseRep.findHousesByAdminId(adminId).map { HouseData(it.id, it.address) }
     }
 
     /**
@@ -78,10 +79,10 @@ class AdminServiceImpl @Autowired constructor(
     /**
      * Получить все услуги по дому
      */
-    override fun getPublicServices(houseId: Long): List<PublicServiceDto> {
+    override fun getPublicServices(houseId: Long): List<PublicServiceData> {
         return houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-            .publicServices.map { PublicServiceDto(it.id, it.name, it.calculationType) }
+            .publicServices.map { PublicServiceData(it.id, it.name, it.calculationType) }
     }
 
     /**
@@ -102,17 +103,17 @@ class AdminServiceImpl @Autowired constructor(
     /**
      * Все собственники квартир
      */
-    override fun getUsers(houseId: Long): List<UserDto>{
+    override fun getUsers(houseId: Long): List<UserData>{
         return houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-            .flats.map { UserDto(it.userId, it.chatId) }.distinct()
+            .flats.map { UserData(it.userId, it.chatId) }.distinct()
     }
 
 
     /**
      * Посчитать квитанции
      */
-    override fun calculateBills(houseId: Long) {
+    override fun calculateBills(houseId: Long): List<BillServiceResultData> {
         val calculationData = LocalDate.now()
         val house = houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
@@ -126,13 +127,19 @@ class AdminServiceImpl @Autowired constructor(
             }
         val year = calculationData.year
         val month = calculationData.monthValue
-        house.flats.forEach {
+        return house.flats.map {
+
             val currentMetrics: Map<PublicService, Double> = it.metrics
                 .metricGrouping { m -> checkIfDateInMonth(m.actionDate, calculationData) and !m.isInit }
+
             val previousMetrics: Map<PublicService, Double> = it.metrics
                 .metricGrouping { m -> checkIfDateInMonth(m.actionDate, calculationData.minusMonths(1)) }
+
             val initMetrics: Map<PublicService, Double> = it.metrics
                 .metricGrouping { m -> checkIfDateInMonth(m.actionDate, calculationData) and m.isInit }
+
+            val address = "${house.address}, кв. ${it.number}"
+
             val param = BillData(
                 year,
                 month,
@@ -150,6 +157,8 @@ class AdminServiceImpl @Autowired constructor(
             //Расчитываем квитанцию
             var content = excelService.build(param)
             billRep.save(Bill(it, year, month, content))
+
+            BillServiceResultData(it.userId, "Платеж по $address за месяц $month $year.xlsx", content)
         }
     }
 

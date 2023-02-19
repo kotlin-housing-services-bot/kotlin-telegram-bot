@@ -9,26 +9,27 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.UserSessionManager
-import ru.kotlinschool.bot.handlers.entities.HandlerResponse
-import ru.kotlinschool.bot.handlers.entities.MeterReadingsAdd
-import ru.kotlinschool.bot.handlers.entities.UserSession
+import ru.kotlinschool.bot.SessionManager
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
+import ru.kotlinschool.bot.handlers.model.AddMetricsRequest
+import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
 import ru.kotlinschool.bot.ui.Command
-import ru.kotlinschool.bot.ui.addMeterReadingsMessage
 import ru.kotlinschool.bot.ui.createSelectFlatKeyboard
 import ru.kotlinschool.bot.ui.selectFlatMessage
-import ru.kotlinschool.dto.FlatDto
-import ru.kotlinschool.dto.HouseDto
+import ru.kotlinschool.data.FlatData
+import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.service.UserService
+import ru.kotlinschool.util.buildAnswerMessage
+import ru.kotlinschool.util.createHousesMessages
 
 private const val TEST_ID = 1L
-private val TEST_HOUSE = HouseDto(1, "адрес")
-private val TEST_FLAT = FlatDto(1, "адрес")
+private val TEST_HOUSE = HouseData(1, "адрес")
+private val TEST_FLAT = FlatData(1, "адрес")
 
 
 class UserActionsHandlerTest {
 
-    private val sessionManager: UserSessionManager = mockk(relaxed = true) {
+    private val sessionManager: SessionManager = mockk(relaxed = true) {
     }
 
     private val userService: UserService = mockk {
@@ -57,7 +58,7 @@ class UserActionsHandlerTest {
             // check
             assertInstanceOf(HandlerResponse.Basic::class.java, response)
             assertEquals(expected, (response as HandlerResponse.Basic).messages)
-            verify { sessionManager.startSession(TEST_ID, UserSession.FlatRegistration) }
+            verify { sessionManager.startSession(TEST_ID, SessionAwareRequest.FlatRegistrationRequest) }
         }
     }
 
@@ -75,7 +76,7 @@ class UserActionsHandlerTest {
             // check
             assertInstanceOf(HandlerResponse.Basic::class.java, response)
             assertEquals(expected, (response as HandlerResponse.Basic).messages)
-            verify { sessionManager.startSession(TEST_ID, MeterReadingsAdd.SelectFlat(expectedFlats)) }
+            verify { sessionManager.startSession(TEST_ID, AddMetricsRequest.SelectFlatRequest(expectedFlats)) }
         }
     }
 

@@ -14,7 +14,7 @@ import java.time.LocalDate
  * Коммунальные услуги
  */
 @Entity
-data class Metric(
+class Metric(
     /**
      * Квартира
      */
