@@ -14,16 +14,15 @@ import ru.kotlinschool.bot.handlers.entities.HandlerResponse
 import ru.kotlinschool.bot.handlers.entities.MeterReadingsAdd
 import ru.kotlinschool.bot.handlers.entities.UserSession
 import ru.kotlinschool.bot.ui.Command
-import ru.kotlinschool.bot.ui.addMeterReadingsMessage
 import ru.kotlinschool.bot.ui.createSelectFlatKeyboard
 import ru.kotlinschool.bot.ui.selectFlatMessage
-import ru.kotlinschool.dto.FlatDto
-import ru.kotlinschool.dto.HouseDto
+import ru.kotlinschool.data.FlatData
+import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.service.UserService
 
 private const val TEST_ID = 1L
-private val TEST_HOUSE = HouseDto(1, "адрес")
-private val TEST_FLAT = FlatDto(1, "адрес")
+private val TEST_HOUSE = HouseData(1, "адрес")
+private val TEST_FLAT = FlatData(1, "адрес")
 
 
 class UserActionsHandlerTest {

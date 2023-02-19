@@ -62,6 +62,6 @@ class Flat(
     /**
      * Услуги
      */
-    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "flat")
+    @OneToMany(cascade = [CascadeType.ALL], mappedBy = "flat", fetch = FetchType.EAGER)
     val metrics: List<Metric> = ArrayList()
 )

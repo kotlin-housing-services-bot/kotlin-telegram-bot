@@ -2,20 +2,19 @@ package ru.kotlinschool.bot.handlers
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import ru.kotlinschool.bot.UserSessionManager
 import ru.kotlinschool.bot.handlers.entities.BroadcastData
 import ru.kotlinschool.bot.handlers.entities.HandlerResponse
 import ru.kotlinschool.bot.handlers.entities.UpdateRates
 import ru.kotlinschool.bot.handlers.entities.UserSession
-import ru.kotlinschool.bot.ui.Command
-import ru.kotlinschool.bot.ui.billsSentMessage
-import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
-import ru.kotlinschool.bot.ui.createHousesKeyboard
-import ru.kotlinschool.bot.ui.dataSavedMessage
-import ru.kotlinschool.bot.ui.selectHouseMessage
+import ru.kotlinschool.bot.ui.*
+import ru.kotlinschool.data.BillServiceResultData
 import ru.kotlinschool.service.AdminService
+import java.io.ByteArrayInputStream
 
 /**
  * Обработчик команд от админ-пользователя.
@@ -129,14 +128,28 @@ class AdminActionsHandler @Autowired constructor(
         }
 
     private fun handleTriggerCalculationWithoutSession(message: Message) : HandlerResponse.Broadcast {
-        val messagesToAdmin: List<SendMessage> = listOf(
-            buildAnswerMessage(message.chatId, billsSentMessage)
-        )
-        // TODO: provide real data from service
-        //  1. find chat id of client by telegram id
-        //  2. build document and pair to chat id
-        val broadcastToUsers: List<BroadcastData> = listOf()
 
+        val messageIdLong = message.chatId
+        val messagesToAdmin: List<SendMessage> = listOf(
+            buildAnswerMessage(messageIdLong, billsSentMessage)
+        )
+
+        val broadcastToUsers: List<BroadcastData> = adminService
+            .getHouses(messageIdLong)
+            .flatMap { adminService.calculateBills(it.id) }
+            .map {
+                val userIdStr = it.userId.toString()
+                BroadcastData(
+                    SendMessage().apply {
+                        chatId = userIdStr
+                        text = newPaymentBill
+                    },
+                    SendDocument().apply {
+                        chatId = userIdStr
+                        document = InputFile(ByteArrayInputStream(it.data), it.fileName)
+                    }
+                )
+            }
         return HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
     }
 }

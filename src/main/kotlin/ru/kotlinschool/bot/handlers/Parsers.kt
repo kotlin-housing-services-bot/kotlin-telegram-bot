@@ -8,7 +8,7 @@ import ru.kotlinschool.bot.ui.flatNumErrorMessage
 import ru.kotlinschool.bot.ui.formatErrorMessage
 import ru.kotlinschool.bot.ui.houseIdErrorMessage
 import ru.kotlinschool.bot.ui.residentsErrorMessage
-import ru.kotlinschool.dto.PublicServiceDto
+import ru.kotlinschool.data.PublicServiceData
 import ru.kotlinschool.exception.ParserException
 import java.math.BigDecimal
 
@@ -82,7 +82,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
  * @throws ParserException в случае не соответствия введённых пользоветелем данных формату.
  */
 @Throws(ParserException::class)
-fun parseMeterReadings(text: String, publicServices: List<PublicServiceDto>): List<MappedRegistrationData> {
+fun parseMeterReadings(text: String, publicServices: List<PublicServiceData>): List<MappedRegistrationData> {
     val lines = text.split(LINE_SEPARATOR)
         .filter { it.isNotBlank() }
 
@@ -113,7 +113,7 @@ fun parseMeterReadings(text: String, publicServices: List<PublicServiceDto>): Li
  * @throws ParserException в случае не соответствия введённых пользоветелем данных формату.
  */
 @Throws(ParserException::class)
-fun parseRates(text: String, publicServices: List<PublicServiceDto>): List<MappedRatesData> {
+fun parseRates(text: String, publicServices: List<PublicServiceData>): List<MappedRatesData> {
     val lines = text.split(LINE_SEPARATOR)
         .filter { it.isNotBlank() }
 

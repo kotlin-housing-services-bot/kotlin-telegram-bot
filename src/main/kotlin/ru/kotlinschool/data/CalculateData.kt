@@ -1,4 +1,4 @@
-package ru.kotlinschool.dto
+package ru.kotlinschool.data
 
 import java.math.BigDecimal
 

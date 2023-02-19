@@ -1,8 +1,8 @@
 package ru.kotlinschool.service
 
 import org.springframework.stereotype.Service
-import ru.kotlinschool.dto.CalculateData
-import ru.kotlinschool.dto.CalculationResult
+import ru.kotlinschool.data.CalculateData
+import ru.kotlinschool.data.CalculationResultData
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.persistent.entity.CalculationType.BY_METER
 import ru.kotlinschool.persistent.entity.CalculationType.BY_FLAT_AREA
@@ -18,7 +18,7 @@ class CalculationServiceImpl : CalculationService {
             BY_MONTHLY_RATE to MonthlyCalculationStrategy()
         )
 
-    override fun execute(type: CalculationType, data: CalculateData): CalculationResult {
+    override fun execute(type: CalculationType, data: CalculateData): CalculationResultData {
         return operations[type]!!.execute(data)
     }
 
