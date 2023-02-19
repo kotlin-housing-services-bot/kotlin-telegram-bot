@@ -59,7 +59,7 @@ class UserServiceImpl @Autowired constructor(
      * Получить все квартиры пользователя
      */
     override fun getFlats(userId: Long): List<FlatDto> {
-        return flatRep.findByUserId(userId).map { FlatDto(it.id, "${it.house.address}, д. ${it.number}") }
+        return flatRep.findByUserId(userId).map { FlatDto(it.id, "${it.house.address}, кв. ${it.number}") }
     }
 
     /**

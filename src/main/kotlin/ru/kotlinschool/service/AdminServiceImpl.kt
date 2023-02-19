@@ -11,6 +11,7 @@ import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.persistent.entity.House
 import ru.kotlinschool.persistent.entity.ManagementCompany
+import ru.kotlinschool.persistent.entity.Metric
 import ru.kotlinschool.persistent.entity.PublicService
 import ru.kotlinschool.persistent.entity.Rate
 import ru.kotlinschool.persistent.repository.BillRepository
@@ -113,20 +114,21 @@ class AdminServiceImpl @Autowired constructor(
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
         val rates = house.publicServices.stream()
             .collect(Collectors.toMap(PublicService::id, PublicService::rates))
-            .mapValues { (_, v) -> v.filter { it.dateBegin.isBefore(calculationData)
-                    || it.dateBegin.isEqual(calculationData) }.maxByOrNull { it.dateBegin }!!.sum }
+            .mapValues { (_, v) ->
+                v.filter {
+                    it.dateBegin.isBefore(calculationData)
+                            || it.dateBegin.isEqual(calculationData)
+                }.maxByOrNull { it.dateBegin }!!.sum
+            }
         val year = calculationData.year
         val month = calculationData.monthValue
         house.flats.forEach {
             val currentMetrics: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, calculationData) and !m.isInit}
-                .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
+                .metricGrouping { m -> checkIfDateInMonth(m.actionDate, calculationData) and !m.isInit }
             val previousMetrics: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, calculationData.minusMonths(1)) }
-                .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
+                .metricGrouping { m -> checkIfDateInMonth(m.actionDate, calculationData.minusMonths(1)) }
             val initMetrics: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, calculationData) and m.isInit}
-                .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
+                .metricGrouping { m -> checkIfDateInMonth(m.actionDate, calculationData) and m.isInit }
             val param = BillData(
                 year,
                 month,
@@ -147,11 +149,18 @@ class AdminServiceImpl @Autowired constructor(
         }
     }
 
-    private fun checkDateInMonth(inDate: LocalDate, dateOfMonth: LocalDate): Boolean {
-        return (inDate.isAfter(dateOfMonth.with(TemporalAdjusters.firstDayOfMonth()))
-                || inDate.isEqual(dateOfMonth.with(TemporalAdjusters.firstDayOfMonth())))
-                && (inDate.isBefore(dateOfMonth.with(TemporalAdjusters.lastDayOfMonth()))
-                || inDate.isEqual(dateOfMonth.with(TemporalAdjusters.lastDayOfMonth())))
+    private fun List<Metric>.metricGrouping(predicate: (Metric) -> Boolean): Map<PublicService, Double> {
+        return this.filter(predicate)
+            .groupBy { p -> p.publicService }.mapValues { (_, v) ->
+            v.maxByOrNull { m -> m.actionDate }!!.value
+        }
+    }
+
+    private fun checkIfDateInMonth(inDate: LocalDate, dateOfMonth: LocalDate): Boolean {
+        val firstDayOfMonth = dateOfMonth.with(TemporalAdjusters.firstDayOfMonth())
+        val lastDayOfMonth = dateOfMonth.with(TemporalAdjusters.lastDayOfMonth())
+        return (inDate.isAfter(firstDayOfMonth) || inDate.isEqual(firstDayOfMonth))
+                && (inDate.isBefore(lastDayOfMonth) || inDate.isEqual(lastDayOfMonth))
     }
 
 }

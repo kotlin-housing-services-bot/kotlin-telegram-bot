@@ -139,6 +139,10 @@ class AdminServiceImplTest {
         fillMetrics1()
         fillMetrics2()
         fillMetrics3()
+        repositorySettings()
+}
+
+    fun repositorySettings(){
         every { billRep.save(any()) } returns bill
         every { houseRep.findById(any()) } returns Optional.of(house)
         every { publicServiceRep.findById(1L) } returns Optional.of(service1)
@@ -149,7 +153,8 @@ class AdminServiceImplTest {
         every { managementCompanyRep.findByUserId(1L) } returns managementCompany
         every {managementCompanyRep.save(any()) } returns managementCompany
         every { houseRep.findHousesByAdminId(1L) } returns listOf(house)
-}
+    }
+    }
 
     fun fillMetrics1() {
         every { metric111.publicService } returns service1
