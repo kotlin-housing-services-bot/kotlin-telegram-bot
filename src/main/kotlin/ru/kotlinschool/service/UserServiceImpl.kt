@@ -7,11 +7,9 @@ import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.ManagementCompanyDto
 import ru.kotlinschool.dto.PublicServiceDto
 import ru.kotlinschool.exception.EntityNotFoundException
-import ru.kotlinschool.persistent.entity.Client
 import ru.kotlinschool.persistent.entity.Flat
 import ru.kotlinschool.persistent.entity.Metric
 import ru.kotlinschool.persistent.repository.BillRepository
-import ru.kotlinschool.persistent.repository.ClientRepository
 import ru.kotlinschool.persistent.repository.FlatRepository
 import ru.kotlinschool.persistent.repository.HouseRepository
 import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
@@ -27,8 +25,7 @@ class UserServiceImpl @Autowired constructor(
     private val flatRep: FlatRepository,
     private val publicServiceRep: PublicServiceRepository,
     private val metricRep: MetricRepository,
-    private val billRep: BillRepository,
-    private val clientRepository: ClientRepository
+    private val billRep: BillRepository
 ) : UserService {
 
     /**

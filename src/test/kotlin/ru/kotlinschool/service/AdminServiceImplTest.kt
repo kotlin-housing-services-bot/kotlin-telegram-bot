@@ -21,6 +21,8 @@ import ru.kotlinschool.persistent.repository.HouseRepository
 import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
 import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
+import ru.kotlinschool.util.ExcelService
+import ru.kotlinschool.util.ExcelServiceImpl
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -69,12 +71,14 @@ class AdminServiceImplTest {
     private val metric314 = mockk<Metric>()
     private val metric321 = mockk<Metric>()
     private val metric322 = mockk<Metric>()
+    private val excelService = mockk<ExcelServiceImpl>()
     private val adminService = AdminServiceImpl(
         managementCompanyRep,
         houseRep,
         rateRep,
         publicServiceRep,
-        billRep
+        billRep,
+        excelService
     )
 
     @BeforeEach
@@ -118,6 +122,14 @@ class AdminServiceImplTest {
         every { service3.house } returns house
         every { service3.calculationType } returns CalculationType.BY_MONTHLY_RATE
         every { service3.unit } returns "мес"
+        fillFlat()
+        fillMetrics1()
+        fillMetrics2()
+        fillMetrics3()
+        repositorySettings()
+    }
+
+    fun fillFlat() {
         every { flat1.number } returns "1"
         every { flat2.number } returns "2"
         every { flat3.number } returns "3"
@@ -136,11 +148,7 @@ class AdminServiceImplTest {
         every { flat1.numberOfResidents } returns 2
         every { flat2.numberOfResidents } returns 1
         every { flat3.numberOfResidents } returns 3
-        fillMetrics1()
-        fillMetrics2()
-        fillMetrics3()
-        repositorySettings()
-}
+    }
 
     fun repositorySettings(){
         every { billRep.save(any()) } returns bill
@@ -151,8 +159,9 @@ class AdminServiceImplTest {
         every { publicServiceRep.save(any()) } returns service4
         every { houseRep.save(any()) } returns house
         every { managementCompanyRep.findByUserId(1L) } returns managementCompany
-        every {managementCompanyRep.save(any()) } returns managementCompany
+        every { managementCompanyRep.save(any()) } returns managementCompany
         every { houseRep.findHousesByAdminId(1L) } returns listOf(house)
+        every { excelService.build(any()) } returns byteArrayOf(10, 2, 15, 11)
     }
 
     fun fillMetrics1() {

@@ -20,6 +20,7 @@ import ru.kotlinschool.persistent.repository.HouseRepository
 import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
 import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
+import ru.kotlinschool.util.ExcelService
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -31,7 +32,8 @@ class AdminServiceImpl @Autowired constructor(
     private val houseRep: HouseRepository,
     private val rateRep: RateRepository,
     private val publicServiceRep: PublicServiceRepository,
-    private val billRep: BillRepository
+    private val billRep: BillRepository,
+    private val excelService: ExcelService
 ) : AdminService {
 
     /**
@@ -146,8 +148,8 @@ class AdminServiceImpl @Autowired constructor(
                 }
             )
             //Расчитываем квитанцию
-            var content: ByteArray? = byteArrayOf(10, 2, 15, 11)//вызов excelService
-            billRep.save(Bill(it, year, month, content!!))
+            var content = excelService.build(param)
+            billRep.save(Bill(it, year, month, content))
         }
     }
 
