@@ -7,16 +7,25 @@ import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.springframework.core.io.ClassPathResource
+import org.springframework.stereotype.Component
+import ru.kotlinschool.dto.BillData
+import ru.kotlinschool.dto.CalculateData
+import ru.kotlinschool.dto.ManagementCompanyDto
+import ru.kotlinschool.persistent.entity.CalculationType
+import ru.kotlinschool.service.CalculationService
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-class ExcelBuilder {
+@Component
+class ExcelBuilder(
+    private val calculationService: CalculationService
+) {
     private val workbook: Workbook
     private val sheet: Sheet
     private var companyRow = 4
-    private var publicServiceRow = 9
+    private var publicServiceRow = 8
     private var resultSum = BigDecimal.ZERO
 
     init {
@@ -26,31 +35,58 @@ class ExcelBuilder {
         sheet = workbook.getSheetAt(0)
     }
 
-    fun addCustomer(fio: String, flatNumber: Int, flatSquare: Double, residentNumber: Int): ExcelBuilder {
+    fun buildBill(billData: BillData, managementCompany: ManagementCompanyDto): ExcelBuilder {
+        billData.run {
+            addCustomer(address, area!!, numberOfResidents!!)
+            services.forEachIndexed { i, billServiceData ->
+                billServiceData.run {
+                    val calculateData = CalculateData(rate, area, numberOfResidents, metricCurrent, metricPrevious)
+                    addPublicService(i, name, unit, calculationType, calculateData)
+                }
+            }
+        }
+        managementCompany.run {
+            addManagementCompany(id, name)
+        }
+        return this
+    }
+
+    fun save(): ByteArray =
+        workbook.use { wb ->
+            return ByteArrayOutputStream().use {
+                wb.write(it)
+                it.toByteArray()
+            }
+        }
+
+    private fun addCustomer(address: String, flatSquare: Double, residentNumber: Long): ExcelBuilder {
         var startRow = 2
         val customerColumnIndex = 2
 
-        sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(fio)
-        sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(flatNumber)
+        sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(address)
         sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(flatSquare)
         sheet.getRow(startRow).getCell(customerColumnIndex).setCellValue(residentNumber)
 
         return this
     }
 
-    fun addManagementCompany(number: Long, name: String, address: String, inn: String): ExcelBuilder {
+    private fun addManagementCompany(number: Long, name: String): ExcelBuilder {
         var companyColumnIndex = 4
         sheet.getRow(companyRow).apply {
             getCell(companyColumnIndex++).setCellValue(number)
             getCell(companyColumnIndex++).setCellValue(name)
-            getCell(companyColumnIndex++).setCellValue(address)
-            getCell(companyColumnIndex++).setCellValue(inn)
         }
 
         return this
     }
 
-    fun addPublicService(number: Int, name: String, unit: String, volume: BigDecimal, rate: BigDecimal): ExcelBuilder {
+    private fun addPublicService(
+        number: Int,
+        name: String,
+        unit: String,
+        type: CalculationType,
+        calculateData: CalculateData
+    ): ExcelBuilder {
         var customerColumnIndex = 0
         val style = workbook.createCellStyle().apply {
             borderRight = BorderStyle.THIN
@@ -62,7 +98,7 @@ class ExcelBuilder {
             setFont(font)
         }
         sheet.shiftRows(publicServiceRow, publicServiceRow, 1)
-        val result = volume * rate
+        val (volume, result) = calculationService.execute(type, calculateData).run { volume to sum }
 
         sheet.createRow(publicServiceRow++).apply {
             createCell(customerColumnIndex++).apply {
@@ -79,11 +115,11 @@ class ExcelBuilder {
             }
             createCell(customerColumnIndex++).apply {
                 cellStyle = style
-                setCellValue(volume.toEngineeringString())
+                setCellValue(volume?.toEngineeringString())
             }
             createCell(customerColumnIndex++).apply {
                 cellStyle = style
-                setCellValue(rate.toStringScale2())
+                setCellValue(calculateData.rate.toStringScale2())
             }
             createCell(customerColumnIndex++).apply {
                 cellStyle = style
@@ -97,14 +133,6 @@ class ExcelBuilder {
 
         return this
     }
-
-    fun save(): ByteArray =
-        workbook.use { wb ->
-            return@use ByteArrayOutputStream().use {
-                wb.write(it)
-                it.toByteArray()
-            }
-        }
 
     private fun Cell.setCellValue(value: Int) = this.setCellValue(value.toDouble())
     private fun Cell.setCellValue(value: Long) = this.setCellValue(value.toDouble())
