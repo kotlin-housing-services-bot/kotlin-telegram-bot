@@ -1,7 +1,7 @@
 package ru.kotlinschool.util
 
 import org.springframework.stereotype.Service
-import ru.kotlinschool.dto.BillData
+import ru.kotlinschool.data.BillData
 
 @Service
 class ExcelServiceImpl : ExcelService {

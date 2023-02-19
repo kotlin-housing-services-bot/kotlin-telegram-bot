@@ -1,6 +1,6 @@
 package ru.kotlinschool.util
 
-import ru.kotlinschool.dto.BillData
+import ru.kotlinschool.data.BillData
 
 interface ExcelService {
 
