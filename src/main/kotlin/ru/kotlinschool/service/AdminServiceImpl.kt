@@ -122,7 +122,7 @@ class AdminServiceImpl @Autowired constructor(
                 v.filter {
                     it.dateBegin.isBefore(calculationData)
                             || it.dateBegin.isEqual(calculationData)
-                }.maxByOrNull { it.dateBegin }!!.sum
+                }.maxBy { it.dateBegin }.sum
             }
         val year = calculationData.year
         val month = calculationData.monthValue
@@ -155,8 +155,8 @@ class AdminServiceImpl @Autowired constructor(
 
     private fun List<Metric>.metricGrouping(predicate: (Metric) -> Boolean): Map<PublicService, Double> {
         return this.filter(predicate)
-            .groupBy { p -> p.publicService }.mapValues { (_, v) ->
-            v.maxByOrNull { m -> m.actionDate }!!.value
+            .groupBy(Metric::publicService).mapValues { (_, v) ->
+            v.maxBy(Metric::actionDate).value
         }
     }
 
