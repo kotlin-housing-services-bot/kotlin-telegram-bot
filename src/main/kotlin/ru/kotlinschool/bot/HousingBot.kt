@@ -4,9 +4,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
-import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.kotlinschool.bot.handlers.AdminActionsHandler
@@ -24,13 +22,13 @@ import ru.kotlinschool.bot.ui.welcomeMessage
  * Бот для обработки действия пользователя. Входная точка в приложение.
  * Рулит входящими, исходящими сообщениями и клавиатурой.
  *
- * @see UserSessionManager
+ * @see SessionManager
  */
 @Component
 class HousingBot @Autowired constructor(
     private val userActionsHandler: UserActionsHandler,
     private val adminActionsHandler: AdminActionsHandler,
-    private val userSessionManager: UserSessionManager,
+    private val sessionManager: SessionManager,
     @Value("\${telegram.bot.token}") botNameValue: String
 ) : TelegramLongPollingBot(botNameValue) {
 
@@ -69,7 +67,7 @@ class HousingBot @Autowired constructor(
                 }.let(::execute)
             }
             Command.Stop.commandText -> {
-                userSessionManager.resetUserSession(message.from.id)
+                sessionManager.resetUserSession(message.from.id)
 
                 SendMessage().apply {
                     chatId = message.chatId.toString()
@@ -98,7 +96,7 @@ class HousingBot @Autowired constructor(
 
         if (message.text.contains(Command.Cancel.commandText)) {
 
-            userSessionManager.resetUserSession(message.from.id)
+            sessionManager.resetUserSession(message.from.id)
 
             SendMessage().apply {
                 chatId = message.chatId.toString()

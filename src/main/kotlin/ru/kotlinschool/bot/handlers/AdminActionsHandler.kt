@@ -6,25 +6,24 @@ import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.UserSessionManager
+import ru.kotlinschool.bot.SessionManager
 import ru.kotlinschool.bot.handlers.entities.BroadcastData
 import ru.kotlinschool.bot.handlers.entities.HandlerResponse
-import ru.kotlinschool.bot.handlers.entities.UpdateRates
-import ru.kotlinschool.bot.handlers.entities.UserSession
+import ru.kotlinschool.bot.handlers.entities.UpdateRatesRequest
+import ru.kotlinschool.bot.handlers.entities.SessionAwareRequest
 import ru.kotlinschool.bot.ui.*
-import ru.kotlinschool.data.BillServiceResultData
 import ru.kotlinschool.service.AdminService
 import java.io.ByteArrayInputStream
 
 /**
  * Обработчик команд от админ-пользователя.
  *
- * @see UserSessionManager
+ * @see SessionManager
  */
 @Component
 class AdminActionsHandler @Autowired constructor(
     private val adminService: AdminService,
-    private val userSessionManager: UserSessionManager,
+    private val sessionManager: SessionManager,
 ) {
 
     /**
@@ -36,7 +35,7 @@ class AdminActionsHandler @Autowired constructor(
      * @see ResponseCallback
      */
     fun handle(message: Message, callback: ResponseCallback) {
-        val sessionType = userSessionManager.getUserSession(message.from.id)
+        val sessionType = sessionManager.getUserSession(message.from.id)
 
         val response = if (sessionType == null) {
             handleTextAction(message)
@@ -77,11 +76,11 @@ class AdminActionsHandler @Autowired constructor(
      * @param message — Входное сообщение
      * @return Ответные сообщения по результатам обработки
      *
-     * @see UserSession
+     * @see SessionAwareRequest
      */
-    private fun handleActionWithSession(message: Message, userSession: UserSession): HandlerResponse {
-        val messages = when (userSession) {
-            is UpdateRates -> handleUpdateRatesWithSession(message, userSession)
+    private fun handleActionWithSession(message: Message, sessionAwareRequest: SessionAwareRequest): HandlerResponse {
+        val messages = when (sessionAwareRequest) {
+            is UpdateRatesRequest -> handleUpdateRatesWithSession(message, sessionAwareRequest)
             else -> listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage))
         }
         return HandlerResponse.Basic(messages)
@@ -89,7 +88,7 @@ class AdminActionsHandler @Autowired constructor(
 
     private fun handleUpdateRatesWithoutSession(message: Message): HandlerResponse.Basic {
         val houses = adminService.getHouses(message.from.id)
-        userSessionManager.startSession(message.from.id, UpdateRates.SelectHouse(houses))
+        sessionManager.startSession(message.from.id, UpdateRatesRequest.SelectHouseRequest(houses))
 
         return HandlerResponse.Basic(
                 listOf(buildAnswerMessage(message.chatId, selectHouseMessage, createHousesKeyboard(houses)))
@@ -97,31 +96,31 @@ class AdminActionsHandler @Autowired constructor(
     }
 
     /**
-     * Обработка сообщений на изменение тарифов в зависимости от актуально сессии [UpdateRates].
+     * Обработка сообщений на изменение тарифов в зависимости от актуально сессии [UpdateRatesRequest].
      *
      * @param message — Входное сообщение
      * @return Ответные сообщения по результатам обработки
      *
-     * @see UpdateRates
+     * @see UpdateRatesRequest
      */
-    private fun handleUpdateRatesWithSession(message: Message, userSession: UpdateRates): List<SendMessage> =
+    private fun handleUpdateRatesWithSession(message: Message, userSession: UpdateRatesRequest): List<SendMessage> =
         when (userSession) {
-            is UpdateRates.SelectHouse -> {
+            is UpdateRatesRequest.SelectHouseRequest -> {
                 val selectedHouse = userSession.houses.first { it.address == message.text }
                 val services = adminService.getPublicServices(selectedHouse.id)
                     .sortedBy { it.id }
 
-                userSessionManager.startSession(message.from.id, UpdateRates.Update(services))
+                sessionManager.startSession(message.from.id, UpdateRatesRequest.UpdateRequest(services))
 
                 createRatesUpdateMessages(message.chatId, services)
             }
 
-            is UpdateRates.Update -> {
+            is UpdateRatesRequest.UpdateRequest -> {
                 parseRates(message.text, userSession.publicServices).forEach { (id, value) ->
                     adminService.setRate(id, value)
                 }
 
-                userSessionManager.resetUserSession(message.from.id)
+                sessionManager.resetUserSession(message.from.id)
 
                 listOf(buildAnswerMessage(message.chatId, dataSavedMessage))
             }
