@@ -34,6 +34,8 @@ insert into public_service_rate(id, public_service_id, rate_sum, date_begin) val
 insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (9, 9, 46.91, to_date('01.01.2023', 'dd.mm.yyyy'));
 insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (10, 10, 150.71, to_date('01.01.2023', 'dd.mm.yyyy'));
 
+--changeset TatianaDo:12
+insert into flat(id, userId, chatId, house_id, flat_number, area, numberOfResidents) values (1, 383036855, 383036855, "45", 65.0, 2);
 
 
 

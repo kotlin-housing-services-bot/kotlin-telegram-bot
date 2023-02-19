@@ -89,7 +89,7 @@ class AdminServiceImpl @Autowired constructor(
             Rate(
                 publicService,
                 value,
-                LocalDate.now().plusMonths(1).with(TemporalAdjusters.firstDayOfMonth())
+                LocalDate.now().with(TemporalAdjusters.firstDayOfMonth())
             )
         )
     }
@@ -108,22 +108,24 @@ class AdminServiceImpl @Autowired constructor(
      * Посчитать квитанции
      */
     override fun calculateBills(houseId: Long) {
+        val calculationData = LocalDate.now()
         val house = houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
         val rates = house.publicServices.stream()
             .collect(Collectors.toMap(PublicService::id, PublicService::rates))
-            .mapValues { (_, v) -> v.maxByOrNull { it.dateBegin }!!.sum }
-        val year = LocalDate.now().year
-        val month = LocalDate.now().monthValue
+            .mapValues { (_, v) -> v.filter { it.dateBegin.isBefore(calculationData)
+                    || it.dateBegin.isEqual(calculationData) }.maxByOrNull { it.dateBegin }!!.sum }
+        val year = calculationData.year
+        val month = calculationData.monthValue
         house.flats.forEach {
             val currentMetrics: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) and !m.isInit}
+                .filter { m -> checkDateInMonth(m.actionDate, calculationData) and !m.isInit}
                 .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
             val previousMetrics: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now().minusMonths(1)) }
+                .filter { m -> checkDateInMonth(m.actionDate, calculationData.minusMonths(1)) }
                 .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
             val initMetrics: Map<PublicService, Double> = it.metrics
-                .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) and m.isInit}
+                .filter { m -> checkDateInMonth(m.actionDate, calculationData) and m.isInit}
                 .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
             val param = BillData(
                 year,
