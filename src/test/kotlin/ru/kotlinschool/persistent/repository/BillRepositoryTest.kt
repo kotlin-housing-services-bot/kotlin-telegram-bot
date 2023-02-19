@@ -60,7 +60,7 @@ class BillRepositoryTest {
                 flat = flat!!,
                 year = 2023,
                 month = 1,
-                File("src/test/resources/Bill_template.xlsx").readBytes()
+                File("src/main/resources/bill-template.xlsx").readBytes()
             )
         )
     }

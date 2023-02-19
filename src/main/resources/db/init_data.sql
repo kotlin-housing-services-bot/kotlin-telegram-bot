@@ -34,7 +34,13 @@ insert into public_service_rate(id, public_service_id, rate_sum, date_begin) val
 insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (9, 9, 46.91, to_date('01.01.2023', 'dd.mm.yyyy'));
 insert into public_service_rate(id, public_service_id, rate_sum, date_begin) values (10, 10, 150.71, to_date('01.01.2023', 'dd.mm.yyyy'));
 
+--changeset TatianaDo:12
+insert into flat(id, user_id, chat_id, house_id, flat_number, area, number_of_residents) values (1, 383036855, 383036855, 1, '45', 65.0, 2);
 
+--changeset TatianaDo:13
+insert into metric(id, flat_id, public_service_id, metric_value, metric_date, is_init) values (1, 1, 2, 10, to_date('01.02.2023', 'dd.mm.yyyy'), true);
+insert into metric(id, flat_id, public_service_id, metric_value, metric_date, is_init) values (2, 1, 4, 1, to_date('01.02.2023', 'dd.mm.yyyy'), true);
+insert into metric(id, flat_id, public_service_id, metric_value, metric_date, is_init) values (3, 1, 5, 3, to_date('01.02.2023', 'dd.mm.yyyy'), true);
 
 
 
