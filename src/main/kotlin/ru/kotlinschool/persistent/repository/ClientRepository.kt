@@ -5,6 +5,7 @@ import org.springframework.stereotype.Repository
 import ru.kotlinschool.persistent.entity.Client
 
 @Repository
+// FIXME : UNUSED ?
 interface ClientRepository : JpaRepository<Client, Long> {
 
     fun findClientByTelegramUserId(telegramUserId: Long): Client?

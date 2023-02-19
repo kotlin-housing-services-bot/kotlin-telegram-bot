@@ -11,9 +11,11 @@ import ru.kotlinschool.bot.ui.residentsErrorMessage
 import ru.kotlinschool.dto.PublicServiceDto
 import ru.kotlinschool.exception.ParserException
 import java.math.BigDecimal
-import java.time.LocalDate
 
 private const val FLAT_REQUIRED_LINES = 4
+private const val SPACE_CHAR_DELIMETER = ' '
+private const val SEMICOLON_DELIMETER = ";"
+private val LINE_SEPARATOR = System.lineSeparator()
 
 /**
  * Парсер данных квартиры
@@ -27,13 +29,12 @@ private const val FLAT_REQUIRED_LINES = 4
  */
 @Throws(ParserException::class)
 fun parseFlatData(text: String): FlatRegistrationData {
-    val lines = text.split("\n")
-        .map { it.removePrefix("\r").removeSuffix("\r") }
+    val lines = text.split(LINE_SEPARATOR)
         .filter { it.isNotBlank() }
 
     return if (lines.size == FLAT_REQUIRED_LINES) {
         // house id
-        val houseIdTokens = lines.first().split(' ')
+        val houseIdTokens = lines.first().split(SPACE_CHAR_DELIMETER)
         val houseId = when (houseIdTokens.size) {
             1 -> houseIdTokens.first()
             2 -> houseIdTokens[1]
@@ -41,7 +42,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
         }.toLongOrNull() ?: throw ParserException(houseIdErrorMessage)
 
         // flat
-        val flatNumTokens = lines[1].split(' ')
+        val flatNumTokens = lines[1].split(SPACE_CHAR_DELIMETER)
 
         val flatNum = when (flatNumTokens.size) {
             1 -> flatNumTokens.first()
@@ -50,7 +51,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
         }
 
         // area
-        val areaTokens = lines[2].split(' ')
+        val areaTokens = lines[2].split(SPACE_CHAR_DELIMETER)
         val area = when (areaTokens.size) {
             1 -> areaTokens.first()
             2 -> areaTokens[1]
@@ -58,7 +59,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
         }.toDoubleOrNull() ?: throw ParserException(flatAreaErrorMessage)
 
         // residents
-        val residentsTokens = lines[3].split(' ')
+        val residentsTokens = lines[3].split(SPACE_CHAR_DELIMETER)
         val residentsNum = when (residentsTokens.size) {
             1 -> residentsTokens.first()
             2 -> residentsTokens[1]
@@ -82,13 +83,12 @@ fun parseFlatData(text: String): FlatRegistrationData {
  */
 @Throws(ParserException::class)
 fun parseMeterReadings(text: String, publicServices: List<PublicServiceDto>): List<MappedRegistrationData> {
-    val lines = text.split("\n")
-        .map { it.removePrefix("\r").removeSuffix("\r") }
+    val lines = text.split(LINE_SEPARATOR)
         .filter { it.isNotBlank() }
 
     return if (lines.size == publicServices.size) {
         lines.mapIndexed { index, line ->
-            val tokens = line.split(' ')
+            val tokens = line.split(SPACE_CHAR_DELIMETER)
 
             val value = when (tokens.size) {
                 1 -> tokens.first()
@@ -114,13 +114,12 @@ fun parseMeterReadings(text: String, publicServices: List<PublicServiceDto>): Li
  */
 @Throws(ParserException::class)
 fun parseRates(text: String, publicServices: List<PublicServiceDto>): List<MappedRatesData> {
-    val lines = text.split("\n")
-        .map { it.removePrefix("\r").removeSuffix("\r") }
+    val lines = text.split(LINE_SEPARATOR)
         .filter { it.isNotBlank() }
 
     return if (lines.size == publicServices.size) {
         lines.mapIndexed { index, line ->
-            val tokens = line.split(' ')
+            val tokens = line.split(SPACE_CHAR_DELIMETER)
 
             val value = when (tokens.size) {
                 1 -> tokens.first().extractRateValues()
@@ -135,7 +134,7 @@ fun parseRates(text: String, publicServices: List<PublicServiceDto>): List<Mappe
 
 // TODO
 private fun String.extractRateValues(): BigDecimal =
-    split(";").takeIf { it.size == 2 }
+    split(SEMICOLON_DELIMETER).takeIf { it.size == 2 }
         ?.let { (valueString) ->
             val value = valueString.toBigDecimalOrNull() ?: throw ParserException(formatErrorMessage)
 

@@ -16,7 +16,7 @@ import jakarta.validation.constraints.NotNull
  * Данные по квартире
  */
 @Entity
-data class Flat(
+class Flat(
     /**
      * Ид пользователя-администратора в Telegram
      */

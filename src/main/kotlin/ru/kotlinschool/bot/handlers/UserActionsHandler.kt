@@ -168,6 +168,7 @@ class UserActionsHandler @Autowired constructor(
     private fun startAddingMeterReadings(message: Message, isInitial: Boolean = false): List<SendMessage> {
         val flats = userService.getFlats(message.from.id).takeIf { it.isNotEmpty() }
             ?: throw FlatNotRegisteredException()
+
         userSessionManager.startSession(message.from.id, MeterReadingsAdd.SelectFlat(flats))
 
         return mutableListOf<SendMessage>().apply {

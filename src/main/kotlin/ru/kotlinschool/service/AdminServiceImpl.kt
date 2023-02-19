@@ -127,6 +127,7 @@ class AdminServiceImpl @Autowired constructor(
             val initMetrics: Map<PublicService, Double> = it.metrics
                 .filter { m -> checkDateInMonth(m.actionDate, LocalDate.now()) and m.isInit}
                 .groupBy { p -> p.publicService }.mapValues { (_, v) -> v.maxByOrNull { m -> m.actionDate }!!.value }
+            // FIXME : UNUSED ?
             val param = BillData(
                 year,
                 month,
@@ -142,7 +143,7 @@ class AdminServiceImpl @Autowired constructor(
                 }
             )
             //Расчитываем квитанцию
-            var content: ByteArray? = byteArrayOf(10, 2, 15, 11)//вызов excelService
+            val content: ByteArray? = byteArrayOf(10, 2, 15, 11)//вызов excelService
             billRep.save(Bill(it, year, month, content!!))
         }
     }

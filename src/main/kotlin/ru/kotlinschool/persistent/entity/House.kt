@@ -15,7 +15,7 @@ import jakarta.validation.constraints.NotNull
  * Дом, обслуживаемый УК
  */
 @Entity
-data class House(
+class House(
     /**
      * Управляющая компания
      */

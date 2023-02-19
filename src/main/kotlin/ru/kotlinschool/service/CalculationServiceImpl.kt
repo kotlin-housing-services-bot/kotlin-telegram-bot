@@ -6,7 +6,7 @@ import ru.kotlinschool.dto.CalculationResult
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.persistent.entity.CalculationType.BY_METER
 import ru.kotlinschool.persistent.entity.CalculationType.BY_FLAT_AREA
-import ru.kotlinschool.persistent.entity.CalculationType.BY_NUMBER_OF_RESDENTS
+import ru.kotlinschool.persistent.entity.CalculationType.BY_NUMBER_OF_RESIDENTS
 import ru.kotlinschool.persistent.entity.CalculationType.BY_MONTHLY_RATE
 
 @Service
@@ -14,7 +14,7 @@ class CalculationServiceImpl : CalculationService {
         private var operations = mapOf(
             BY_METER to MetricCalculationStrategy(),
             BY_FLAT_AREA to AreaCalculationStrategy(),
-            BY_NUMBER_OF_RESDENTS to ResidentsCalculationStrategy(),
+            BY_NUMBER_OF_RESIDENTS to ResidentsCalculationStrategy(),
             BY_MONTHLY_RATE to MonthlyCalculationStrategy()
         )
 

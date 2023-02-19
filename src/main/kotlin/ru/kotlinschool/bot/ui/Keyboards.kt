@@ -17,7 +17,7 @@ val CANCEL_KEYBOARD: ReplyKeyboard = ReplyKeyboardMarkup().apply {
 val CLEARED_KEYBOARD: ReplyKeyboard = ReplyKeyboardRemove().apply { removeKeyboard = true }
 
 val REQUEST_BILL_KEYBOARD: ReplyKeyboard = ReplyKeyboardMarkup().apply {
-//    Month.values()
+
     keyboard = listOf(
         KeyboardRow(
             listOf(KeyboardButton("Январь - 1"), KeyboardButton("Февраль - 2"), KeyboardButton("Март - 3"))

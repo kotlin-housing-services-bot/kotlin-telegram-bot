@@ -13,4 +13,4 @@ data class CalculationResult(
      */
     val volume: BigDecimal? = null
 
-    )
+)

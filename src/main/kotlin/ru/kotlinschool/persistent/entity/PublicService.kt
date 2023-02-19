@@ -18,7 +18,7 @@ import jakarta.validation.constraints.NotNull
  * Коммунальные услуги
  */
 @Entity
-data class PublicService(
+class PublicService(
     /**
      * Дом
      */
@@ -67,5 +67,5 @@ enum class CalculationType(val description: String) {
     BY_MONTHLY_RATE("ежемесячному тарифу"),
     BY_METER("по показаниям счетчика"),
     BY_FLAT_AREA("по площади квартиры"),
-    BY_NUMBER_OF_RESDENTS("по количеству прописанных")
+    BY_NUMBER_OF_RESIDENTS("по количеству прописанных")
 }

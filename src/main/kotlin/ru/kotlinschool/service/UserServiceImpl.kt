@@ -27,8 +27,7 @@ class UserServiceImpl @Autowired constructor(
     private val flatRep: FlatRepository,
     private val publicServiceRep: PublicServiceRepository,
     private val metricRep: MetricRepository,
-    private val billRep: BillRepository,
-    private val clientRepository: ClientRepository
+    private val billRep: BillRepository
 ) : UserService {
 
     /**

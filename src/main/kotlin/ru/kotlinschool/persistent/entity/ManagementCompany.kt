@@ -13,7 +13,7 @@ import jakarta.validation.constraints.NotNull
  * Данные управляющей компании
  */
 @Entity
-data class ManagementCompany (
+class ManagementCompany (
     /**
      * Название организации
      */

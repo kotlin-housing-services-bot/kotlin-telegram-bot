@@ -15,13 +15,15 @@ import ru.kotlinschool.bot.ui.ratesUpdateHeaderMessage
 import ru.kotlinschool.dto.HouseDto
 import ru.kotlinschool.dto.PublicServiceDto
 
+private val LINE_SEPARATOR = System.lineSeparator()
+
 fun createHousesMessages(chatId: Long, houses: List<HouseDto>) =
     mutableListOf<SendMessage>().apply {
         add(buildAnswerMessage(chatId, flatRegistrationMessageHeaderMessage))
         add(buildAnswerMessage(chatId, preserveDataOrderMessage))
         add(buildAnswerMessage(chatId, flatRegistrationMessage))
 
-        val housesMessage = houses.joinToString("\n", "$housesMessageTemplate\n") { "${it.id} - ${it.address}" }
+        val housesMessage = houses.joinToString(LINE_SEPARATOR, "$housesMessageTemplate$LINE_SEPARATOR") { "${it.id} - ${it.address}" }
         add(buildAnswerMessage(chatId, housesMessage, CANCEL_KEYBOARD))
     }
 
@@ -46,7 +48,7 @@ fun createRatesUpdateMessages(chatId: Long, publicServices: List<PublicServiceDt
     }
 
 fun createPublicServiceListMessage(publicServices: List<PublicServiceDto>) =
-    publicServices.withIndex().joinToString(separator = "\n") { "${it.index + 1}. ${it.value.name}" }
+    publicServices.withIndex().joinToString(LINE_SEPARATOR) { "${it.index + 1}. ${it.value.name}" }
 
 fun buildAnswerMessage(
     targetChatId: Long,
