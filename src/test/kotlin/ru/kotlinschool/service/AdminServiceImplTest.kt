@@ -154,7 +154,6 @@ class AdminServiceImplTest {
         every {managementCompanyRep.save(any()) } returns managementCompany
         every { houseRep.findHousesByAdminId(1L) } returns listOf(house)
     }
-    }
 
     fun fillMetrics1() {
         every { metric111.publicService } returns service1
