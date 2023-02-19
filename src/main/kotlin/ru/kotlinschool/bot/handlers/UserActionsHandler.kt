@@ -12,6 +12,7 @@ import ru.kotlinschool.bot.handlers.model.PreviousBillRequest
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
 import ru.kotlinschool.bot.session.SessionManager
 import ru.kotlinschool.bot.ui.*
+import ru.kotlinschool.data.FlatData
 import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.exception.FlatNotRegisteredException
@@ -144,9 +145,9 @@ class UserActionsHandler @Autowired constructor(
     private fun handleFlatRegistration(message: Message): List<SendMessage> {
         val (houseId, flatNum, area, residentsNum) = parseFlatData(message.text)
 
-        userService.registerFlat(message.from.id, message.chatId, houseId, flatNum, area, residentsNum)
+        val flatData = userService.registerFlat(message.from.id, message.chatId, houseId, flatNum, area, residentsNum)
 
-        return startAddingMeterReadings(message, isInitial = true)
+        return startAddingMeterReadings(message, flatData)
     }
 
     /**
@@ -159,14 +160,19 @@ class UserActionsHandler @Autowired constructor(
      * @throws FlatNotRegisteredException в случае, когда у пользователя нет зарегестрированных квартир
      */
     @Throws(FlatNotRegisteredException::class)
-    private fun startAddingMeterReadings(message: Message, isInitial: Boolean = false): List<SendMessage> {
-        val flats = userService.getFlats(message.from.id).takeIf { it.isNotEmpty() }
-            ?: throw FlatNotRegisteredException()
+    private fun startAddingMeterReadings(message: Message, flatData: FlatData?  = null): List<SendMessage> {
+
+
+        val flats = if (flatData != null) {
+            listOf(flatData)
+        } else {
+            userService.getFlats(message.from.id).takeIf { it.isNotEmpty() } ?: throw FlatNotRegisteredException()
+        }
 
         sessionManager.startSession(message.from.id, AddMetricsRequest.SelectFlatRequest(flats))
 
         return mutableListOf<SendMessage>().apply {
-            if (isInitial) {
+            if (flatData != null) {
                 add(buildAnswerMessage(message.chatId, addMeterReadingsMessage))
             }
             add(buildAnswerMessage(message.chatId, selectFlatMessage, createSelectFlatKeyboard(flats)))
