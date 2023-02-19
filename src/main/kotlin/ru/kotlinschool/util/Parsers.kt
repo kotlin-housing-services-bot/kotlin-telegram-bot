@@ -3,17 +3,14 @@ package ru.kotlinschool.util
 import ru.kotlinschool.bot.handlers.entities.FlatRegistrationData
 import ru.kotlinschool.bot.handlers.entities.MappedRatesData
 import ru.kotlinschool.bot.handlers.entities.MappedRegistrationData
-import ru.kotlinschool.bot.ui.flatAreaErrorMessage
-import ru.kotlinschool.bot.ui.flatNumErrorMessage
-import ru.kotlinschool.bot.ui.formatErrorMessage
-import ru.kotlinschool.bot.ui.houseIdErrorMessage
-import ru.kotlinschool.bot.ui.residentsErrorMessage
+import ru.kotlinschool.bot.ui.*
 import ru.kotlinschool.data.PublicServiceData
 import ru.kotlinschool.exception.ParserException
 import java.math.BigDecimal
 
 private const val FLAT_REQUIRED_LINES = 4
 private const val SPACE_CHAR_DELIMETER = ' '
+private const val LINE_DELIMETER = '-'
 private const val SEMICOLON_DELIMETER = ";"
 private val LINE_SEPARATOR = System.lineSeparator()
 
@@ -132,6 +129,11 @@ fun parseRates(text: String, publicServices: List<PublicServiceData>): List<Mapp
     } else throw ParserException(formatErrorMessage)
 }
 
+@Throws(ParserException::class)
+fun parseMonthMessageGetNumber(text: String): Int {
+    return Integer.valueOf(text.split(LINE_DELIMETER)[1].trim())
+}
+
 // TODO
 private fun String.extractRateValues(): BigDecimal =
     split(SEMICOLON_DELIMETER).takeIf { it.size == 2 }
@@ -140,3 +142,4 @@ private fun String.extractRateValues(): BigDecimal =
 
             value
         } ?: throw ParserException(formatErrorMessage)
+

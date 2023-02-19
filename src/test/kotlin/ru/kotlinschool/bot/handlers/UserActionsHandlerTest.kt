@@ -9,7 +9,7 @@ import org.junit.jupiter.api.Test
 
 import org.junit.jupiter.api.Assertions.*
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.SessionManager
+import ru.kotlinschool.bot.session.SessionManager
 import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.handlers.model.AddMetricsRequest
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest

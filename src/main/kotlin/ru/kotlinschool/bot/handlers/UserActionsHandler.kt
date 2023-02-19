@@ -2,26 +2,16 @@ package ru.kotlinschool.bot.handlers
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.SessionManager
-import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.handlers.model.AddMetricsRequest
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.handlers.model.PreviousBillRequest
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
-import ru.kotlinschool.bot.ui.CANCEL_KEYBOARD
-import ru.kotlinschool.bot.ui.Command
-import ru.kotlinschool.bot.ui.NO_FLAT_USER
-import ru.kotlinschool.bot.ui.REQUEST_BILL_KEYBOARD
-import ru.kotlinschool.bot.ui.addFlatRecommendationMessage
-import ru.kotlinschool.bot.ui.addMeterReadingsMessage
-import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
-import ru.kotlinschool.bot.ui.createSelectFlatKeyboard
-import ru.kotlinschool.bot.ui.dataSavedMessage
-import ru.kotlinschool.bot.ui.retryMessage
-import ru.kotlinschool.bot.ui.selectFlatMessage
-import ru.kotlinschool.bot.ui.selectMonthMessage
-import ru.kotlinschool.bot.ui.unknownError
+import ru.kotlinschool.bot.session.SessionManager
+import ru.kotlinschool.bot.ui.*
 import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.exception.FlatNotRegisteredException
@@ -29,6 +19,8 @@ import ru.kotlinschool.exception.ParserException
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.UserService
 import ru.kotlinschool.util.*
+import java.io.ByteArrayInputStream
+import java.io.Serializable
 
 /**
  * Обработчик команд от обычного пользователя.
@@ -62,6 +54,7 @@ class UserActionsHandler @Autowired constructor(
             }
         }.getOrElse { error ->
             // TODO: log
+            error.printStackTrace()
             when (error) {
                 is EntityNotFoundException -> listOf(
                     buildAnswerMessage(message.chatId, error.message),
@@ -127,7 +120,7 @@ class UserActionsHandler @Autowired constructor(
      *
      * @see SessionAwareRequest
      */
-    private fun handleActionWithSession(message: Message, sessionAwareRequest: SessionAwareRequest): List<SendMessage> =
+    private fun handleActionWithSession(message: Message, sessionAwareRequest: SessionAwareRequest): List<PartialBotApiMethod<out Serializable>> =
         when (sessionAwareRequest) {
             is SessionAwareRequest.FlatRegistrationRequest -> handleFlatRegistration(message)
             is AddMetricsRequest -> handleMeterReadingsUpdate(message, sessionAwareRequest)
@@ -231,7 +224,7 @@ class UserActionsHandler @Autowired constructor(
      * @throws FlatNotRegisteredException
      */
     @Throws(FlatNotRegisteredException::class)
-    private fun handlePreviousBillRequest(message: Message, userSession: PreviousBillRequest): List<SendMessage> =
+    private fun handlePreviousBillRequest(message: Message, userSession: PreviousBillRequest): List<PartialBotApiMethod<out Serializable>> =
         when (userSession) {
             is PreviousBillRequest.StartRequest -> {
                 val flats = userService.getFlats(message.from.id).takeIf { it.isNotEmpty() }
@@ -249,9 +242,28 @@ class UserActionsHandler @Autowired constructor(
                 listOf(buildAnswerMessage(message.chatId, selectMonthMessage, REQUEST_BILL_KEYBOARD))
             }
             is PreviousBillRequest.SelectMonthRequest -> {
-//                TODO: parse month and get bill
-//                userService.getBill()
-                TODO()
+
+                val command = sessionManager.getUserSession(message.from.id)
+                        as PreviousBillRequest.SelectMonthRequest
+
+                try {
+
+                    val yearNum = 2023 // TODO: Get from session
+                    val monthNum = parseMonthMessageGetNumber(message.text)
+                    val data = userService.getBill(command.flat.id, yearNum, monthNum)
+                    val name = generateBillName(command.flat.address, monthNum, yearNum)
+                    val inputFile = InputFile(ByteArrayInputStream(data), name)
+
+                    listOf(
+                        buildAnswerMessage(message.chatId, billFound),
+                        buildAnswerDocument(message.chatId, inputFile)
+                    )
+
+                } catch (e: EntityNotFoundException) {
+                    listOf(buildAnswerMessage(message.chatId, billNotFound))
+                }
+
+
             }
         }
 }
