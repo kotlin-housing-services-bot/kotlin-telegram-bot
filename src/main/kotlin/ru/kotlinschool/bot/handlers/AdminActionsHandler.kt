@@ -74,6 +74,10 @@ class AdminActionsHandler @Autowired constructor(
                 handleTriggerCalculationWithoutSession(message)
             }
 
+            Command.Admin.TriggerNotify.commandText -> {
+                handleNotificationWithoutSession(message)
+            }
+
             else -> HandlerResponse.Basic(listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage)))
         }
 
@@ -158,5 +162,22 @@ class AdminActionsHandler @Autowired constructor(
             }
 
         return HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
+    }
+
+    private fun handleNotificationWithoutSession(message: Message) :HandlerResponse.Broadcast {
+
+        val messageIdLong = message.chatId
+        val messagesToAdmin: List<SendMessage> = listOf(
+            buildAnswerMessage(messageIdLong, notificationsSentMessage)
+        )
+
+        val broadcastToUsers: List<PartialBotApiMethod<out Serializable>> = adminService
+            .getHouses(messageIdLong)
+            .flatMap { adminService.getUsers(it.id) }
+            .toSet()
+            .map { buildAnswerMessage(it.id, addMeterReadingNotification) }
+
+        return HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
+
     }
 }

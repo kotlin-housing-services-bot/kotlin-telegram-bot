@@ -1,6 +1,6 @@
 package ru.kotlinschool.bot.ui
 
-// errors
+// ~~ ERRORS
 const val commandNotSupportedErrorMessage = "Команда не поддерживается"
 const val flatAreaErrorMessage = "Площадь квартиры введена неверно"
 const val flatNumErrorMessage = "Номер квартиры введён неверно"
@@ -10,13 +10,13 @@ const val preserveDataOrderMessage = "‼️Обязательно сохран�
 const val residentsErrorMessage = "Количество жильцов введено неверно"
 const val unknownError = "Неизвестная ошибка"
 
-// common
+// ~~ COMMON
 const val farewellMessage = "До встречи!"
 const val dataSavedMessage = "Сохранили!"
 const val retryMessage = "Давайте попробуем ещё раз"
 const val welcomeMessage = "Добрый день!"
 
-// user
+// ~~ USER
 // flat
 const val addFlatRecommendationMessage = "Хотите прикрепить?"
 const val flatIsNotRegisteredMessage = "Похоже вы не прикрепили квартиру"
@@ -35,7 +35,8 @@ const val selectMonthMessage = "За какой месяц?"
 const val billFound = "Ваш счет на оплату: "
 const val billNotFound = "Не найдено квитанции по заданным параметрам"
 
-// meter readings
+// metrics
+const val addMeterReadingNotification = "Необходимо передать показания за текущий месяц!"
 const val addMeterReadingsMessage = "Необходимо добавить текущие показания"
 const val enterMeterReadingsHeaderMessage = "Введите значения счётчиков"
 val enterMeterReadingsFormatMessage = """
@@ -51,10 +52,11 @@ val housesMessageTemplate = """
 Идентификатор - Адрес
 """.trimIndent()
 
-// admin
+// ~~ ADMIN
 //calculations
 const val billsSentMessage = "Счета разосланы"
-
+// notifications
+const val notificationsSentMessage = "Нотификации разосланы"
 // house
 const val selectHouseMessage = "Выберите дом"
 
