@@ -45,14 +45,17 @@ class UserServiceImpl @Autowired constructor(
     /**
      * Добавление квартиры
      */
-    override fun registerFlat(userId: Long,
-                              chatId: Long,
-                              houseId: Long,
-                              flatNumber: String,
-                              area: Double,
-                              numberOfResidents: Long) {
+    override fun registerFlat(
+        userId: Long,
+        chatId: Long,
+        houseId: Long,
+        flatNumber: String,
+        area: Double,
+        numberOfResidents: Long
+    ): FlatData {
         val house = houseRep.findById(houseId).orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
-        flatRep.save(Flat(userId, chatId, house, flatNumber, area, numberOfResidents))
+        return flatRep.save(Flat(userId, chatId, house, flatNumber, area, numberOfResidents))
+            .let { FlatData(it.id, "${it.house.address}, д. ${it.number}") }
     }
 
     /**
