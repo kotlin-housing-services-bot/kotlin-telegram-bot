@@ -9,7 +9,7 @@ import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.kotlinschool.bot.handlers.AdminActionsHandler
 import ru.kotlinschool.bot.handlers.UserActionsHandler
-import ru.kotlinschool.bot.handlers.entities.HandlerResponse
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.ui.CLEARED_KEYBOARD
 import ru.kotlinschool.bot.ui.Command
 import ru.kotlinschool.bot.ui.START_KEYBOARD_ADMIN

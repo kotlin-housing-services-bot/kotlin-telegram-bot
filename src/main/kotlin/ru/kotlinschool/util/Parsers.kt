@@ -1,4 +1,4 @@
-package ru.kotlinschool.bot.handlers
+package ru.kotlinschool.util
 
 import ru.kotlinschool.bot.handlers.entities.FlatRegistrationData
 import ru.kotlinschool.bot.handlers.entities.MappedRatesData

@@ -5,10 +5,10 @@ import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
 import ru.kotlinschool.bot.SessionManager
-import ru.kotlinschool.bot.handlers.entities.HandlerResponse
-import ru.kotlinschool.bot.handlers.entities.AddMetricsRequest
-import ru.kotlinschool.bot.handlers.entities.PreviousBillRequest
-import ru.kotlinschool.bot.handlers.entities.SessionAwareRequest
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
+import ru.kotlinschool.bot.handlers.model.AddMetricsRequest
+import ru.kotlinschool.bot.handlers.model.PreviousBillRequest
+import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
 import ru.kotlinschool.bot.ui.CANCEL_KEYBOARD
 import ru.kotlinschool.bot.ui.Command
 import ru.kotlinschool.bot.ui.NO_FLAT_USER
@@ -28,6 +28,7 @@ import ru.kotlinschool.exception.FlatNotRegisteredException
 import ru.kotlinschool.exception.ParserException
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.UserService
+import ru.kotlinschool.util.*
 
 /**
  * Обработчик команд от обычного пользователя.

@@ -1,4 +1,4 @@
-package ru.kotlinschool.bot.handlers
+package ru.kotlinschool.util
 
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.replykeyboard.ReplyKeyboard

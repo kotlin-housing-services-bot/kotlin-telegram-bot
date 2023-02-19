@@ -7,12 +7,16 @@ import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
 import ru.kotlinschool.bot.SessionManager
-import ru.kotlinschool.bot.handlers.entities.BroadcastData
-import ru.kotlinschool.bot.handlers.entities.HandlerResponse
-import ru.kotlinschool.bot.handlers.entities.UpdateRatesRequest
-import ru.kotlinschool.bot.handlers.entities.SessionAwareRequest
+import ru.kotlinschool.bot.handlers.model.BroadcastData
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
+import ru.kotlinschool.bot.handlers.model.UpdateRatesRequest
+import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
 import ru.kotlinschool.bot.ui.*
 import ru.kotlinschool.service.AdminService
+import ru.kotlinschool.util.ResponseCallback
+import ru.kotlinschool.util.buildAnswerMessage
+import ru.kotlinschool.util.createRatesUpdateMessages
+import ru.kotlinschool.util.parseRates
 import java.io.ByteArrayInputStream
 
 /**
@@ -91,7 +95,7 @@ class AdminActionsHandler @Autowired constructor(
         sessionManager.startSession(message.from.id, UpdateRatesRequest.SelectHouseRequest(houses))
 
         return HandlerResponse.Basic(
-                listOf(buildAnswerMessage(message.chatId, selectHouseMessage, createHousesKeyboard(houses)))
+            listOf(buildAnswerMessage(message.chatId, selectHouseMessage, createHousesKeyboard(houses)))
         )
     }
 

@@ -1,4 +1,4 @@
-package ru.kotlinschool.bot.handlers.entities
+package ru.kotlinschool.bot.handlers.model
 
 import ru.kotlinschool.data.FlatData
 import ru.kotlinschool.data.HouseData

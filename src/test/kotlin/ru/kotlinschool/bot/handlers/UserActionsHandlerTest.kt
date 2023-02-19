@@ -10,15 +10,17 @@ import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.Assertions.*
 import org.telegram.telegrambots.meta.api.objects.Message
 import ru.kotlinschool.bot.SessionManager
-import ru.kotlinschool.bot.handlers.entities.HandlerResponse
-import ru.kotlinschool.bot.handlers.entities.AddMetricsRequest
-import ru.kotlinschool.bot.handlers.entities.SessionAwareRequest
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
+import ru.kotlinschool.bot.handlers.model.AddMetricsRequest
+import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
 import ru.kotlinschool.bot.ui.Command
 import ru.kotlinschool.bot.ui.createSelectFlatKeyboard
 import ru.kotlinschool.bot.ui.selectFlatMessage
 import ru.kotlinschool.data.FlatData
 import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.service.UserService
+import ru.kotlinschool.util.buildAnswerMessage
+import ru.kotlinschool.util.createHousesMessages
 
 private const val TEST_ID = 1L
 private val TEST_HOUSE = HouseData(1, "адрес")

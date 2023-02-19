@@ -1,7 +1,7 @@
 package ru.kotlinschool.bot
 
 import org.springframework.stereotype.Component
-import ru.kotlinschool.bot.handlers.entities.SessionAwareRequest
+import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
 
 /**
  * In-memory менеджер сессий Telegram-пользователей
