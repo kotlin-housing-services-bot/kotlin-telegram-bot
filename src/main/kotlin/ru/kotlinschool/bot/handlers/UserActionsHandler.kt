@@ -22,7 +22,7 @@ import ru.kotlinschool.bot.ui.retryMessage
 import ru.kotlinschool.bot.ui.selectFlatMessage
 import ru.kotlinschool.bot.ui.selectMonthMessage
 import ru.kotlinschool.bot.ui.unknownError
-import ru.kotlinschool.dto.HouseDto
+import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.exception.FlatNotRegisteredException
 import ru.kotlinschool.exception.ParserException
@@ -102,7 +102,7 @@ class UserActionsHandler @Autowired constructor(
                 userSessionManager.startSession(message.from.id, UserSession.FlatRegistration)
 
                 // TODO: use real management company
-                val houses = userService.getHouses(1).sortedBy(HouseDto::id)
+                val houses = userService.getHouses(1).sortedBy(HouseData::id)
                 createHousesMessages(message.chatId, houses)
             }
 

@@ -63,9 +63,9 @@ class PublicService(
 /**
  * Тип расчета суммы
  */
-enum class CalculationType(val description: String) {
-    BY_MONTHLY_RATE("ежемесячному тарифу"),
-    BY_METER("по показаниям счетчика"),
-    BY_FLAT_AREA("по площади квартиры"),
-    BY_NUMBER_OF_RESIDENTS("по количеству прописанных")
+enum class CalculationType {
+    BY_MONTHLY_RATE,
+    BY_METER,
+    BY_FLAT_AREA,
+    BY_NUMBER_OF_RESIDENTS
 }

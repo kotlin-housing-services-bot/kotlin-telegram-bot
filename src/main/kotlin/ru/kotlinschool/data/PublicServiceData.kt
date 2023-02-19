@@ -1,8 +1,8 @@
-package ru.kotlinschool.dto
+package ru.kotlinschool.data
 
 import ru.kotlinschool.persistent.entity.CalculationType
 
-data class PublicServiceDto(
+data class PublicServiceData(
     val id: Long,
     val name: String,
     val calculationType: CalculationType,

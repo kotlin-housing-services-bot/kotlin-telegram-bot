@@ -1,8 +1,8 @@
-package ru.kotlinschool.dto
+package ru.kotlinschool.data
 
 import java.math.BigDecimal
 
-data class CalculationResult(
+data class CalculationResultData(
     /**
      * Сумма
      */

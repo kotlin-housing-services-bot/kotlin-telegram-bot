@@ -8,9 +8,9 @@ import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
-import ru.kotlinschool.dto.BillData
-import ru.kotlinschool.dto.CalculateData
-import ru.kotlinschool.dto.ManagementCompanyDto
+import ru.kotlinschool.data.BillData
+import ru.kotlinschool.data.CalculateData
+import ru.kotlinschool.data.ManagementCompanyData
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.CalculationService
 import java.io.ByteArrayOutputStream
@@ -35,7 +35,7 @@ class ExcelBuilder(
         sheet = workbook.getSheetAt(0)
     }
 
-    fun buildBill(billData: BillData, managementCompany: ManagementCompanyDto): ExcelBuilder {
+    fun buildBill(billData: BillData, managementCompany: ManagementCompanyData): ExcelBuilder {
         billData.run {
             addCustomer(address, area!!, numberOfResidents!!)
             services.forEachIndexed { i, billServiceData ->

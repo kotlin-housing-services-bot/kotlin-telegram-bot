@@ -30,6 +30,7 @@ val flatRegistrationMessage = """
 const val selectFlatMessage = "Выберите квартиру"
 
 // bill
+const val newPaymentBill = "Пришли новые счета на оплату! 🗓"
 const val selectMonthMessage = "За какой месяц?"
 
 // meter readings
