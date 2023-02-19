@@ -64,26 +64,11 @@ class AdminActionsHandler @Autowired constructor(
     private fun handleTextAction(message: Message): HandlerResponse =
         when (message.text) {
             Command.Admin.UpdateRates.commandText -> {
-                val houses = adminService.getHouses(message.from.id)
-                userSessionManager.startSession(message.from.id, UpdateRates.SelectHouse(houses))
-
-                HandlerResponse.Basic(
-                    listOf(buildAnswerMessage(message.chatId, selectHouseMessage, createHousesKeyboard(houses)))
-                )
+                handleUpdateRatesWithoutSession(message)
             }
-
             Command.Admin.TriggerCalculations.commandText -> {
-                val messagesToAdmin: List<SendMessage> = listOf(
-                    buildAnswerMessage(message.chatId, billsSentMessage)
-                )
-                // TODO: provide real data from service
-                //  1. find chat id of client by telegram id
-                //  2. build document and pair to chat id
-                val broadcastToUsers: List<BroadcastData> = emptyList()
-
-                HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
+                handleTriggerCalculationWithoutSession(message)
             }
-
             else -> HandlerResponse.Basic(listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage)))
         }
 
@@ -97,10 +82,19 @@ class AdminActionsHandler @Autowired constructor(
      */
     private fun handleActionWithSession(message: Message, userSession: UserSession): HandlerResponse {
         val messages = when (userSession) {
-            is UpdateRates -> handleUpdateRates(message, userSession)
+            is UpdateRates -> handleUpdateRatesWithSession(message, userSession)
             else -> listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage))
         }
         return HandlerResponse.Basic(messages)
+    }
+
+    private fun handleUpdateRatesWithoutSession(message: Message): HandlerResponse.Basic {
+        val houses = adminService.getHouses(message.from.id)
+        userSessionManager.startSession(message.from.id, UpdateRates.SelectHouse(houses))
+
+        return HandlerResponse.Basic(
+                listOf(buildAnswerMessage(message.chatId, selectHouseMessage, createHousesKeyboard(houses)))
+        )
     }
 
     /**
@@ -111,7 +105,7 @@ class AdminActionsHandler @Autowired constructor(
      *
      * @see UpdateRates
      */
-    private fun handleUpdateRates(message: Message, userSession: UpdateRates): List<SendMessage> =
+    private fun handleUpdateRatesWithSession(message: Message, userSession: UpdateRates): List<SendMessage> =
         when (userSession) {
             is UpdateRates.SelectHouse -> {
                 val selectedHouse = userSession.houses.first { it.address == message.text }
@@ -133,4 +127,16 @@ class AdminActionsHandler @Autowired constructor(
                 listOf(buildAnswerMessage(message.chatId, dataSavedMessage))
             }
         }
+
+    private fun handleTriggerCalculationWithoutSession(message: Message) : HandlerResponse.Broadcast {
+        val messagesToAdmin: List<SendMessage> = listOf(
+            buildAnswerMessage(message.chatId, billsSentMessage)
+        )
+        // TODO: provide real data from service
+        //  1. find chat id of client by telegram id
+        //  2. build document and pair to chat id
+        val broadcastToUsers: List<BroadcastData> = listOf()
+
+        return HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
+    }
 }
