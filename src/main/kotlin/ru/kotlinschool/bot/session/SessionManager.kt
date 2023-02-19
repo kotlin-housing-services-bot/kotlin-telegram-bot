@@ -1,4 +1,4 @@
-package ru.kotlinschool.bot
+package ru.kotlinschool.bot.session
 
 import org.springframework.stereotype.Component
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest

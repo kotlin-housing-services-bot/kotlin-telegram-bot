@@ -32,6 +32,8 @@ const val selectFlatMessage = "Выберите квартиру"
 // bill
 const val newPaymentBill = "Пришли новые счета на оплату! 🗓"
 const val selectMonthMessage = "За какой месяц?"
+const val billFound = "Ваш счет на оплату: "
+const val billNotFound = "Не найдено квитанции по заданным параметрам"
 
 // meter readings
 const val addMeterReadingsMessage = "Необходимо добавить текущие показания"

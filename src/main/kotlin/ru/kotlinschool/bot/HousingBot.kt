@@ -4,19 +4,17 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod
+import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
 import org.telegram.telegrambots.meta.api.objects.Update
 import ru.kotlinschool.bot.handlers.AdminActionsHandler
 import ru.kotlinschool.bot.handlers.UserActionsHandler
 import ru.kotlinschool.bot.handlers.model.HandlerResponse
-import ru.kotlinschool.bot.ui.CLEARED_KEYBOARD
-import ru.kotlinschool.bot.ui.Command
-import ru.kotlinschool.bot.ui.START_KEYBOARD_ADMIN
-import ru.kotlinschool.bot.ui.START_KEYBOARD_USER
-import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
-import ru.kotlinschool.bot.ui.farewellMessage
-import ru.kotlinschool.bot.ui.welcomeMessage
+import ru.kotlinschool.bot.session.SessionManager
+import ru.kotlinschool.bot.ui.*
+import java.io.Serializable
 
 /**
  * Бот для обработки действия пользователя. Входная точка в приложение.
@@ -120,14 +118,14 @@ class HousingBot @Autowired constructor(
     private fun handleTextActionAdmin(message: Message) {
         adminActionsHandler.handle(message) { response ->
             when (response) {
-                is HandlerResponse.Basic -> response.messages.forEach(::execute)
-
+                is HandlerResponse.Basic -> response.messages.forEach{
+                    sendResponse(it)
+                }
                 is HandlerResponse.Broadcast -> response.run {
-                    broadcastMessages.forEach { (message, document) ->
-                        execute(message)
-                        execute(document)
+                    broadcastMessagesToUsers.forEach {
+                        sendResponse(it)
                     }
-                    response.messages.forEach(::execute)
+                    response.messagesToAdmin.forEach(::execute)
                 }
             }
         }
@@ -142,8 +140,17 @@ class HousingBot @Autowired constructor(
     private fun handleTextMessageUser(message: Message) {
         userActionsHandler.handle(message) { response ->
             if (response is HandlerResponse.Basic) {
-                response.messages.forEach(::execute)
+                response.messages.forEach {
+                    sendResponse(it)
+                }
             }
+        }
+    }
+
+    private fun sendResponse(apiMethod: PartialBotApiMethod<out Serializable>) {
+        when(apiMethod) {
+            is SendMessage -> { execute(apiMethod) }
+            is SendDocument -> { execute(apiMethod) }
         }
     }
 }

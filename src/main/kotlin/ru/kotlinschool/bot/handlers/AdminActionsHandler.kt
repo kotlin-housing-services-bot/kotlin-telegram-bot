@@ -2,15 +2,15 @@ package ru.kotlinschool.bot.handlers
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.SessionManager
-import ru.kotlinschool.bot.handlers.model.BroadcastData
 import ru.kotlinschool.bot.handlers.model.HandlerResponse
-import ru.kotlinschool.bot.handlers.model.UpdateRatesRequest
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
+import ru.kotlinschool.bot.handlers.model.UpdateRatesRequest
+import ru.kotlinschool.bot.session.SessionManager
 import ru.kotlinschool.bot.ui.*
 import ru.kotlinschool.service.AdminService
 import ru.kotlinschool.util.ResponseCallback
@@ -18,6 +18,7 @@ import ru.kotlinschool.util.buildAnswerMessage
 import ru.kotlinschool.util.createRatesUpdateMessages
 import ru.kotlinschool.util.parseRates
 import java.io.ByteArrayInputStream
+import java.io.Serializable
 
 /**
  * Обработчик команд от админ-пользователя.
@@ -68,9 +69,11 @@ class AdminActionsHandler @Autowired constructor(
             Command.Admin.UpdateRates.commandText -> {
                 handleUpdateRatesWithoutSession(message)
             }
+
             Command.Admin.TriggerCalculations.commandText -> {
                 handleTriggerCalculationWithoutSession(message)
             }
+
             else -> HandlerResponse.Basic(listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage)))
         }
 
@@ -130,19 +133,19 @@ class AdminActionsHandler @Autowired constructor(
             }
         }
 
-    private fun handleTriggerCalculationWithoutSession(message: Message) : HandlerResponse.Broadcast {
+    private fun handleTriggerCalculationWithoutSession(message: Message): HandlerResponse.Broadcast {
 
         val messageIdLong = message.chatId
         val messagesToAdmin: List<SendMessage> = listOf(
             buildAnswerMessage(messageIdLong, billsSentMessage)
         )
 
-        val broadcastToUsers: List<BroadcastData> = adminService
+        val broadcastToUsers: List<PartialBotApiMethod<out Serializable>> = adminService
             .getHouses(messageIdLong)
             .flatMap { adminService.calculateBills(it.id) }
-            .map {
+            .flatMap {
                 val userIdStr = it.userId.toString()
-                BroadcastData(
+                listOf(
                     SendMessage().apply {
                         chatId = userIdStr
                         text = newPaymentBill
@@ -153,6 +156,7 @@ class AdminActionsHandler @Autowired constructor(
                     }
                 )
             }
+
         return HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
     }
 }
