@@ -5,22 +5,23 @@ import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import org.junit.jupiter.api.AfterEach
+import org.junit.jupiter.api.Assertions.assertEquals
+import org.junit.jupiter.api.Assertions.assertInstanceOf
 import org.junit.jupiter.api.Test
-
-import org.junit.jupiter.api.Assertions.*
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.session.SessionManager
-import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.handlers.model.AddMetricsRequest
-import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
+import ru.kotlinschool.bot.handlers.model.FlatRegistrationRequest
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
+import ru.kotlinschool.bot.session.SessionManager
 import ru.kotlinschool.bot.ui.Command
+import ru.kotlinschool.bot.ui.createHousesKeyboard
 import ru.kotlinschool.bot.ui.createSelectFlatKeyboard
 import ru.kotlinschool.bot.ui.selectFlatMessage
+import ru.kotlinschool.bot.ui.selectHouseMessage
 import ru.kotlinschool.data.FlatData
 import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.service.UserService
 import ru.kotlinschool.util.buildAnswerMessage
-import ru.kotlinschool.util.createHousesMessages
 
 private const val TEST_ID = 1L
 private val TEST_HOUSE = HouseData(1, "адрес")
@@ -52,13 +53,15 @@ class UserActionsHandlerTest {
         val message: Message = mockMessage(Command.User.RegisterFlat.commandText)
 
         // prepare expected data
-        val expected = createHousesMessages(TEST_ID, userService.getHouses(TEST_ID))
+        val houses = userService.getHouses(TEST_ID)
+        val expected = listOf(buildAnswerMessage(TEST_ID, selectHouseMessage, createHousesKeyboard(houses)))
+
 
         userActionsHandler.handle(message) { response ->
             // check
             assertInstanceOf(HandlerResponse.Basic::class.java, response)
             assertEquals(expected, (response as HandlerResponse.Basic).messages)
-            verify { sessionManager.startSession(TEST_ID, SessionAwareRequest.FlatRegistrationRequest) }
+            verify { sessionManager.startSession(TEST_ID, FlatRegistrationRequest.SelectHouseRequest(houses)) }
         }
     }
 

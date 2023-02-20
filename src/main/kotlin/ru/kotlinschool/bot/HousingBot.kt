@@ -4,7 +4,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
-import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.Message
@@ -13,8 +12,15 @@ import ru.kotlinschool.bot.handlers.AdminActionsHandler
 import ru.kotlinschool.bot.handlers.UserActionsHandler
 import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.session.SessionManager
-import ru.kotlinschool.bot.ui.*
-import java.io.Serializable
+import ru.kotlinschool.bot.ui.CLEARED_KEYBOARD
+import ru.kotlinschool.bot.ui.Command
+import ru.kotlinschool.bot.ui.START_KEYBOARD_ADMIN
+import ru.kotlinschool.bot.ui.START_KEYBOARD_USER
+import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
+import ru.kotlinschool.bot.ui.farewellMessage
+import ru.kotlinschool.bot.ui.welcomeMessage
+import ru.kotlinschool.util.BotApiMethod
+import ru.kotlinschool.util.buildAnswerMessage
 
 /**
  * Бот для обработки действия пользователя. Входная точка в приложение.
@@ -27,14 +33,13 @@ class HousingBot @Autowired constructor(
     private val userActionsHandler: UserActionsHandler,
     private val adminActionsHandler: AdminActionsHandler,
     private val sessionManager: SessionManager,
-    @Value("\${telegram.bot.token}") botNameValue: String
-) : TelegramLongPollingBot(botNameValue) {
+    @Value("\${telegram.bot.token}") botToken: String
+) : TelegramLongPollingBot(botToken) {
 
     override fun getBotUsername(): String = "УК Умный Дом"
 
     override fun onUpdateReceived(update: Update) {
-        if (update.message != null) {
-
+        if (update.message != null && update.message.from != null) {
             val isAdmin = adminActionsHandler.checkAdmin(update.message.from.id)
 
             if (update.message.isCommand) {
@@ -58,25 +63,18 @@ class HousingBot @Autowired constructor(
     private fun handleCommand(message: Message, isAdmin: Boolean) {
         when (message.text) {
             Command.Start.commandText -> {
-                SendMessage().apply {
-                    chatId = message.chatId.toString()
-                    text = welcomeMessage
-                    replyMarkup = if (isAdmin) START_KEYBOARD_ADMIN else START_KEYBOARD_USER
-                }.let(::execute)
+                // reset old sessions on start
+                sessionManager.resetUserSession(message.from.id)
+
+                val keyboard = if (isAdmin) START_KEYBOARD_ADMIN else START_KEYBOARD_USER
+                buildAnswerMessage(message.chatId, welcomeMessage, keyboard).let(::execute)
             }
             Command.Stop.commandText -> {
                 sessionManager.resetUserSession(message.from.id)
 
-                SendMessage().apply {
-                    chatId = message.chatId.toString()
-                    text = farewellMessage
-                    replyMarkup = CLEARED_KEYBOARD
-                }.let(::execute)
+                buildAnswerMessage(message.chatId, farewellMessage, CLEARED_KEYBOARD).let(::execute)
             }
-            else -> SendMessage().apply {
-                chatId = message.chatId.toString()
-                text = commandNotSupportedErrorMessage
-            }.let(::execute)
+            else -> buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage).let(::execute)
         }
     }
 
@@ -91,17 +89,10 @@ class HousingBot @Autowired constructor(
      *
      */
     private fun handleTextAction(message: Message, isAdmin: Boolean = false) {
-
         if (message.text.contains(Command.Cancel.commandText)) {
-
             sessionManager.resetUserSession(message.from.id)
 
-            SendMessage().apply {
-                chatId = message.chatId.toString()
-                text = farewellMessage
-                replyMarkup = CLEARED_KEYBOARD
-            }.let(::execute)
-
+            buildAnswerMessage(message.chatId, farewellMessage, CLEARED_KEYBOARD).let(::execute)
         } else if (isAdmin) {
             handleTextActionAdmin(message)
         } else {
@@ -118,13 +109,9 @@ class HousingBot @Autowired constructor(
     private fun handleTextActionAdmin(message: Message) {
         adminActionsHandler.handle(message) { response ->
             when (response) {
-                is HandlerResponse.Basic -> response.messages.forEach{
-                    sendResponse(it)
-                }
+                is HandlerResponse.Basic -> response.messages.forEach(::sendResponse)
                 is HandlerResponse.Broadcast -> response.run {
-                    broadcastMessagesToUsers.forEach {
-                        sendResponse(it)
-                    }
+                    broadcastMessagesToUsers.forEach(::sendResponse)
                     response.messagesToAdmin.forEach(::execute)
                 }
             }
@@ -140,17 +127,15 @@ class HousingBot @Autowired constructor(
     private fun handleTextMessageUser(message: Message) {
         userActionsHandler.handle(message) { response ->
             if (response is HandlerResponse.Basic) {
-                response.messages.forEach {
-                    sendResponse(it)
-                }
+                response.messages.forEach(::sendResponse)
             }
         }
     }
 
-    private fun sendResponse(apiMethod: PartialBotApiMethod<out Serializable>) {
-        when(apiMethod) {
-            is SendMessage -> { execute(apiMethod) }
-            is SendDocument -> { execute(apiMethod) }
+    private fun sendResponse(apiMethod: BotApiMethod) {
+        when (apiMethod) {
+            is SendMessage -> execute(apiMethod)
+            is SendDocument -> execute(apiMethod)
         }
     }
 }

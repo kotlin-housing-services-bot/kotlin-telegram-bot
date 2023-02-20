@@ -159,7 +159,7 @@ class AdminServiceImpl @Autowired constructor(
             val content = ExcelBuilder(calculationService).data(param).build()
             billRep.save(Bill(it, year, month, content))
 
-            BillServiceResultData(it.userId, generateBillName(address, month, year), content)
+            BillServiceResultData(it.chatId, generateBillName(address, month, year), content)
         }
     }
 

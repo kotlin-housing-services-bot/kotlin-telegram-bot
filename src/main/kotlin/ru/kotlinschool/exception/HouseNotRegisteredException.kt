@@ -1,0 +1,5 @@
+package ru.kotlinschool.exception
+
+import ru.kotlinschool.bot.ui.houseNotRegisteredErrorMessage
+
+class HouseNotRegisteredException: IllegalStateException(houseNotRegisteredErrorMessage)

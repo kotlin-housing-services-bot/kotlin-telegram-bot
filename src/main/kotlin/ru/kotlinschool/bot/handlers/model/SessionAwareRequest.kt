@@ -7,8 +7,13 @@ import ru.kotlinschool.data.PublicServiceData
 /**
  * Класс для stateful взаимодействий с ботом, то есть когда требуется отслеживать сессию пользователя
  */
-sealed class SessionAwareRequest {
-    object FlatRegistrationRequest : SessionAwareRequest()
+sealed class SessionAwareRequest
+
+sealed class FlatRegistrationRequest : SessionAwareRequest() {
+
+    data class SelectHouseRequest(val houses: List<HouseData>) : FlatRegistrationRequest()
+
+    data class FlatDataRequest(val house: HouseData) : FlatRegistrationRequest()
 }
 
 sealed class UpdateRatesRequest : SessionAwareRequest() {
@@ -20,11 +25,11 @@ sealed class UpdateRatesRequest : SessionAwareRequest() {
 
 sealed class PreviousBillRequest : SessionAwareRequest() {
 
-    object StartRequest : PreviousBillRequest()
+    object SelectYearRequest : PreviousBillRequest()
 
-    data class SelectFlatRequest(val flats: List<FlatData>) : PreviousBillRequest()
+    data class SelectMonthRequest(val year: Int) : PreviousBillRequest()
 
-    data class SelectMonthRequest(val flat: FlatData) : PreviousBillRequest()
+    data class SelectFlatRequest(val month: Int, val year: Int, val flats: List<FlatData>) : PreviousBillRequest()
 }
 
 sealed class AddMetricsRequest : SessionAwareRequest() {

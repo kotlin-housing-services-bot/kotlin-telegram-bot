@@ -12,5 +12,4 @@ data class CalculationResultData(
      * Объем
      */
     val volume: BigDecimal? = null
-
 )
