@@ -6,9 +6,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
-import org.springframework.stereotype.Component
 import ru.kotlinschool.data.BillData
 import ru.kotlinschool.data.CalculateData
 import ru.kotlinschool.service.CalculationService

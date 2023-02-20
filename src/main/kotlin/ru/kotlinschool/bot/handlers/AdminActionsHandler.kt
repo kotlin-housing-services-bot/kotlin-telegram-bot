@@ -1,6 +1,5 @@
 package ru.kotlinschool.bot.handlers
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument
@@ -13,9 +12,7 @@ import ru.kotlinschool.bot.handlers.model.UpdateRatesRequest
 import ru.kotlinschool.bot.session.SessionManager
 import ru.kotlinschool.bot.ui.CANCEL_KEYBOARD
 import ru.kotlinschool.bot.ui.Command
-import ru.kotlinschool.bot.ui.NO_FLAT_USER
 import ru.kotlinschool.bot.ui.START_KEYBOARD_USER
-import ru.kotlinschool.bot.ui.addFlatRecommendationMessage
 import ru.kotlinschool.bot.ui.addMeterReadingNotification
 import ru.kotlinschool.bot.ui.billsSentMessage
 import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
@@ -27,10 +24,8 @@ import ru.kotlinschool.bot.ui.retryMessage
 import ru.kotlinschool.bot.ui.selectHouseMessage
 import ru.kotlinschool.bot.ui.unknownError
 import ru.kotlinschool.exception.EntityNotFoundException
-import ru.kotlinschool.exception.FlatNotRegisteredException
 import ru.kotlinschool.exception.HouseNotRegisteredException
 import ru.kotlinschool.exception.ParserException
-import ru.kotlinschool.exception.YearNotSupportedException
 import ru.kotlinschool.service.AdminService
 import ru.kotlinschool.util.ResponseCallback
 import ru.kotlinschool.util.buildAnswerMessage
@@ -45,7 +40,7 @@ import java.io.Serializable
  * @see SessionManager
  */
 @Component
-class AdminActionsHandler @Autowired constructor(
+class AdminActionsHandler(
     private val adminService: AdminService,
     private val sessionManager: SessionManager,
 ) {
@@ -69,25 +64,26 @@ class AdminActionsHandler @Autowired constructor(
             }
         }.getOrElse { error ->
             error.printStackTrace()
+            val chatId = message.chatId
             val messages = when (error) {
                 is EntityNotFoundException -> listOf(
-                    buildAnswerMessage(message.chatId, error.message),
-                    buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
+                    buildAnswerMessage(chatId, error.message),
+                    buildAnswerMessage(chatId, retryMessage, CANCEL_KEYBOARD)
                 )
                 is ParserException -> listOf(
-                    buildAnswerMessage(message.chatId, error.message.orEmpty()),
-                    buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
+                    buildAnswerMessage(chatId, error.message.orEmpty()),
+                    buildAnswerMessage(chatId, retryMessage, CANCEL_KEYBOARD)
                 )
                 is HouseNotRegisteredException -> {
                     sessionManager.resetUserSession(message.from.id)
                     listOf(
-                        buildAnswerMessage(message.chatId, error.message.orEmpty()),
-                        buildAnswerMessage(message.chatId, retryMessage, START_KEYBOARD_USER)
+                        buildAnswerMessage(chatId, error.message.orEmpty()),
+                        buildAnswerMessage(chatId, retryMessage, START_KEYBOARD_USER)
                     )
                 }
                 else -> listOf(
-                    buildAnswerMessage(message.chatId, unknownError),
-                    buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
+                    buildAnswerMessage(chatId, unknownError),
+                    buildAnswerMessage(chatId, retryMessage, CANCEL_KEYBOARD)
                 )
             }
 
@@ -154,27 +150,31 @@ class AdminActionsHandler @Autowired constructor(
      *
      * @see UpdateRatesRequest
      */
-    private fun handleUpdateRatesWithSession(message: Message, userSession: UpdateRatesRequest): List<SendMessage> =
-        when (userSession) {
+    private fun handleUpdateRatesWithSession(message: Message, userSession: UpdateRatesRequest): List<SendMessage> {
+        val userId = message.from.id
+        val chatId = message.chatId
+        val text = message.text
+        return when (userSession) {
             is UpdateRatesRequest.SelectHouseRequest -> {
-                val selectedHouse = userSession.houses.first { it.address == message.text }
+                val selectedHouse = userSession.houses.first { it.address == text }
                 val services = adminService.getPublicServices(selectedHouse.id).sortedBy { it.id }
 
-                sessionManager.startSession(message.from.id, UpdateRatesRequest.UpdateRequest(services))
+                sessionManager.startSession(userId, UpdateRatesRequest.UpdateRequest(services))
 
-                createRatesUpdateMessages(message.chatId, services)
+                createRatesUpdateMessages(chatId, services)
             }
 
             is UpdateRatesRequest.UpdateRequest -> {
-                parseRates(message.text, userSession.publicServices).forEach { (id, value) ->
+                parseRates(text, userSession.publicServices).forEach { (id, value) ->
                     adminService.setRate(id, value)
                 }
 
-                sessionManager.resetUserSession(message.from.id)
+                sessionManager.resetUserSession(userId)
 
-                listOf(buildAnswerMessage(message.chatId, dataSavedMessage))
+                listOf(buildAnswerMessage(chatId, dataSavedMessage))
             }
         }
+    }
 
     private fun handleTriggerCalculationWithoutSession(message: Message): HandlerResponse.Broadcast {
         val messageId: Long = message.chatId
