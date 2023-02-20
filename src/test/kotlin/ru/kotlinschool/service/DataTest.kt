@@ -2,6 +2,7 @@ package ru.kotlinschool.service
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import org.junit.jupiter.api.BeforeEach
 import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.CalculationType
@@ -18,7 +19,7 @@ import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
 import ru.kotlinschool.persistent.repository.MetricRepository
 import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
-import ru.kotlinschool.util.ExcelServiceImpl
+import ru.kotlinschool.util.ExcelBuilder
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -68,7 +69,7 @@ open class DataTest {
     val metric314 = mockk<Metric>()
     val metric321 = mockk<Metric>()
     val metric322 = mockk<Metric>()
-    val excelService = mockk<ExcelServiceImpl>()
+    val excelBuilder = mockk<ExcelBuilder>()
 
     @BeforeEach
     fun setUp() {
@@ -153,7 +154,9 @@ open class DataTest {
         every { managementCompanyRep.save(any()) } returns managementCompany
         every { houseRep.findHousesByAdminId(1L) } returns listOf(house)
         every { houseRep.findHousesByManagementCompany(1L) } returns listOf(house)
-        every { excelService.build(any()) } returns byteArrayOf(10, 2, 15, 11)
+        mockkConstructor(ExcelBuilder::class)
+        every { anyConstructed<ExcelBuilder>().data(any()) } returns excelBuilder
+        every { excelBuilder.build() } returns byteArrayOf(10, 2, 15, 11)
     }
 
     fun fillMetrics1() {

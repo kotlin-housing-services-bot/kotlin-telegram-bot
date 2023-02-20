@@ -11,15 +11,13 @@ import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
 import ru.kotlinschool.data.BillData
 import ru.kotlinschool.data.CalculateData
-import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.CalculationService
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-@Component
-class ExcelBuilder @Autowired constructor(
+class ExcelBuilder(
      private val calculationService: CalculationService
 ) {
     private val billTemplate = "bill-template.xlsx"
