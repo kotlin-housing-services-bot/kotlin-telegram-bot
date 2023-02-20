@@ -1,11 +1,13 @@
 package ru.kotlinschool.util
 
+import jakarta.validation.ValidationException
 import ru.kotlinschool.bot.handlers.entities.FlatRegistrationData
 import ru.kotlinschool.bot.handlers.entities.MappedRatesData
 import ru.kotlinschool.bot.handlers.entities.MappedRegistrationData
 import ru.kotlinschool.bot.ui.flatAreaErrorMessage
 import ru.kotlinschool.bot.ui.flatNumErrorMessage
 import ru.kotlinschool.bot.ui.formatErrorMessage
+import ru.kotlinschool.bot.ui.monthErrorMessage
 import ru.kotlinschool.bot.ui.residentsErrorMessage
 import ru.kotlinschool.bot.ui.yearError
 import ru.kotlinschool.data.PublicServiceData
@@ -41,6 +43,9 @@ fun parseFlatData(text: String): FlatRegistrationData {
             1 -> flatNumTokens.first()
             2 -> flatNumTokens[1]
             else -> throw ParserException(flatNumErrorMessage)
+        }.apply {
+            if (this.matches("""\d+|[А-Я]""".toRegex()).not())
+                throw ParserException(flatNumErrorMessage)
         }
 
         // area
@@ -50,6 +55,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
             2 -> areaTokens[1]
             else -> throw ParserException(flatAreaErrorMessage)
         }.toDoubleOrNull() ?: throw ParserException(flatAreaErrorMessage)
+        area.greaterThenZero(flatAreaErrorMessage)
 
         // residents
         val residentsTokens = lines[2].split(SPACE_CHAR_DELIMETER)
@@ -58,6 +64,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
             2 -> residentsTokens[1]
             else -> throw ParserException(residentsErrorMessage)
         }.toLongOrNull() ?: throw ParserException(residentsErrorMessage)
+        residentsNum.greaterThenZero(residentsErrorMessage)
 
         FlatRegistrationData(flatNum, area, residentsNum)
     } else throw ParserException(formatErrorMessage)
@@ -88,6 +95,7 @@ fun parseMeterReadings(text: String, publicServices: List<PublicServiceData>): L
                 2 -> tokens[1]
                 else -> throw ParserException(formatErrorMessage)
             }.toDoubleOrNull() ?: throw ParserException(formatErrorMessage)
+            value.greaterThenZero(formatErrorMessage)
 
             MappedRegistrationData(publicServices[index].id, value)
         }
@@ -127,7 +135,9 @@ fun parseRates(text: String, publicServices: List<PublicServiceData>): List<Mapp
 
 @Throws(ParserException::class)
 fun parseMonthMessageGetNumber(text: String): Int {
-    return Integer.valueOf(text.split(LINE_DELIMETER)[1].trim())
+    return Integer
+        .valueOf(text.split(LINE_DELIMETER)[1].trim())
+        .apply { this.greaterThenZeroAndLessThen(12, monthErrorMessage) }
 }
 
 /**
@@ -138,8 +148,20 @@ fun parseMonthMessageGetNumber(text: String): Int {
 @Throws(ParserException::class, YearNotSupportedException::class)
 fun parseYear(text: String): Int {
     val year = text.toIntOrNull() ?: throw ParserException(yearError)
-    if (year  != Year.now().value)
+    if (year != Year.now().value)
         throw YearNotSupportedException()
 
     return year
+}
+
+private fun Int.greaterThenZeroAndLessThen(max: Int, errMessage: String) {
+    if (this < 0 && this > max) throw ValidationException(errMessage)
+}
+
+private fun Long.greaterThenZero(errMessage: String) {
+    if (this < 0L) throw ValidationException(errMessage)
+}
+
+private fun Double.greaterThenZero(errMessage: String) {
+    if (this < 0.0) throw ValidationException(errMessage)
 }
