@@ -7,6 +7,7 @@ import ru.kotlinschool.data.HouseData
 import ru.kotlinschool.data.ManagementCompanyData
 import ru.kotlinschool.data.PublicServiceData
 import ru.kotlinschool.exception.EntityNotFoundException
+import ru.kotlinschool.exception.TooManyMetricAdditionsException
 import ru.kotlinschool.persistent.entity.Flat
 import ru.kotlinschool.persistent.entity.Metric
 import ru.kotlinschool.persistent.repository.BillRepository
@@ -82,7 +83,9 @@ class UserServiceImpl @Autowired constructor(
             .orElseThrow { EntityNotFoundException("Не найдена квартира с ид = $flatId") }
         val publicService = publicServiceRep.findById(publicServiceId)
             .orElseThrow { EntityNotFoundException("Не найдена коммунальная услуга с ид = $publicServiceId") }
-        metricRep.save(Metric(flat, publicService, value, LocalDate.now(), isInit))
+        runCatching {
+            metricRep.save(Metric(flat, publicService, value, LocalDate.now(), isInit))
+        }.getOrElse { throw TooManyMetricAdditionsException() }
     }
 
     /**
