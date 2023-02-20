@@ -15,8 +15,8 @@ class MetricCalculationStrategy : CalculationStrategy {
 
     override fun execute(data: CalculateData): CalculationResultData {
         val volume = BigDecimal.valueOf(
-            validate(data.metricCurrent, "Не найдены текущие показания") { it != null }
-                    - validate(data.metricPrevious, "Не найдены предыдущие показания") { it != null })
+            validate(data.metricCurrent, "Не найдены текущие показания") { true }
+                    - validate(data.metricPrevious, "Не найдены предыдущие показания") { true })
         return CalculationResultData(data.rate.multiply(volume), volume)
     }
 
@@ -25,7 +25,7 @@ class MetricCalculationStrategy : CalculationStrategy {
 class AreaCalculationStrategy : CalculationStrategy {
 
     override fun execute(data: CalculateData): CalculationResultData {
-        val volume = BigDecimal.valueOf(validate(data.area, "Нет данных о площади квартиры") { it != null })
+        val volume = BigDecimal.valueOf(validate(data.area, "Нет данных о площади квартиры") { true })
         return CalculationResultData(data.rate.multiply(volume), volume)
     }
 
@@ -39,7 +39,7 @@ class ResidentsCalculationStrategy : CalculationStrategy {
                 BigDecimal.valueOf(validate(
                     data.numberOfResidents,
                     "Нет данных о количестве прописанных"
-                ) { it != null })
+                ) { true })
             )
         )
     }

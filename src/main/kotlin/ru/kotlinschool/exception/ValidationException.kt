@@ -4,5 +4,6 @@ class ValidationException(message: String? = null) : IllegalArgumentException(me
 
 
 fun <T> validate(value: T?, errMsg: String, predicate: (T) -> Boolean): T {
-    return value.also { predicate } ?: throw ValidationException(errMsg)
+    if (value == null || predicate.invoke(value)) throw ValidationException(errMsg)
+    else return value
 }
