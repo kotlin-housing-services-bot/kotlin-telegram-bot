@@ -2,16 +2,12 @@ package ru.kotlinschool.service
 
 import ru.kotlinschool.data.CalculateData
 import ru.kotlinschool.data.CalculationResultData
-import ru.kotlinschool.exception.ValidationException
+import ru.kotlinschool.exception.validate
 import java.math.BigDecimal
 
 interface CalculationStrategy {
 
     fun execute(data: CalculateData): CalculationResultData
-
-    fun <T> validate(value: T?, errMsg: String, predicate: (T) -> Boolean): T {
-        return value.also { predicate } ?: throw ValidationException(errMsg)
-    }
 
 }
 
