@@ -6,52 +6,44 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
+import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
 import org.springframework.stereotype.Component
 import ru.kotlinschool.data.BillData
 import ru.kotlinschool.data.CalculateData
-import ru.kotlinschool.data.ManagementCompanyData
-import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.CalculationService
 import java.io.ByteArrayOutputStream
 import java.io.FileInputStream
 import java.math.BigDecimal
 import java.math.RoundingMode
 
-@Component
 class ExcelBuilder(
-    private val calculationService: CalculationService
+     private val calculationService: CalculationService
 ) {
-    private val workbook: Workbook
-    private val sheet: Sheet
+    private val billTemplate = "bill-template.xlsx"
+    private val file = FileInputStream(ClassPathResource(billTemplate).file)
+    private val workbook: Workbook = XSSFWorkbook(file)
+    private val sheet: Sheet = workbook.getSheetAt(0)
     private var companyRow = 4
     private var publicServiceRow = 8
     private var resultSum = BigDecimal.ZERO
 
-    init {
-        val billTemplate = "bill-template.xlsx"
-        val file = FileInputStream(ClassPathResource(billTemplate).file)
-        workbook = XSSFWorkbook(file)
-        sheet = workbook.getSheetAt(0)
-    }
-
-    fun buildBill(billData: BillData, managementCompany: ManagementCompanyData): ExcelBuilder {
+    fun data(billData: BillData): ExcelBuilder {
         billData.run {
-            addCustomer(address, area!!, numberOfResidents!!)
+            addManagementCompany(1, managementCompanyName)
+            addOwner(address, area!!, numberOfResidents!!)
             services.forEachIndexed { i, billServiceData ->
-                billServiceData.run {
+                 billServiceData.run {
                     val calculateData = CalculateData(rate, area, numberOfResidents, metricCurrent, metricPrevious)
-                    addPublicService(i, name, unit, calculationType, calculateData)
+                    val (volume, sum) = calculationService.execute(calculationType, calculateData).run { volume to sum }
+                    addPublicService(i, name, unit, rate, sum, volume)
                 }
             }
-        }
-        managementCompany.run {
-            addManagementCompany(id, name)
         }
         return this
     }
 
-    fun save(): ByteArray =
+    fun build(): ByteArray =
         workbook.use { wb ->
             return ByteArrayOutputStream().use {
                 wb.write(it)
@@ -59,34 +51,32 @@ class ExcelBuilder(
             }
         }
 
-    private fun addCustomer(address: String, flatSquare: Double, residentNumber: Long): ExcelBuilder {
-        var startRow = 2
-        val customerColumnIndex = 2
 
-        sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(address)
-        sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(flatSquare)
-        sheet.getRow(startRow).getCell(customerColumnIndex).setCellValue(residentNumber)
-
-        return this
-    }
-
-    private fun addManagementCompany(number: Long, name: String): ExcelBuilder {
+    private fun addManagementCompany(number: Long, name: String) {
         var companyColumnIndex = 4
         sheet.getRow(companyRow).apply {
             getCell(companyColumnIndex++).setCellValue(number)
             getCell(companyColumnIndex++).setCellValue(name)
         }
+    }
 
-        return this
+    private fun addOwner(address: String, flatArea: Double, residentNumber: Long) {
+        var startRow = 2
+        val customerColumnIndex = 2
+
+        sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(address)
+        sheet.getRow(startRow++).getCell(customerColumnIndex).setCellValue(flatArea)
+        sheet.getRow(startRow).getCell(customerColumnIndex).setCellValue(residentNumber)
     }
 
     private fun addPublicService(
         number: Int,
         name: String,
         unit: String,
-        type: CalculationType,
-        calculateData: CalculateData
-    ): ExcelBuilder {
+        rate: BigDecimal,
+        sum: BigDecimal,
+        volume: BigDecimal? = null
+    ) {
         var customerColumnIndex = 0
         val style = workbook.createCellStyle().apply {
             borderRight = BorderStyle.THIN
@@ -98,7 +88,6 @@ class ExcelBuilder(
             setFont(font)
         }
         sheet.shiftRows(publicServiceRow, publicServiceRow, 1)
-        val (volume, result) = calculationService.execute(type, calculateData).run { volume to sum }
 
         sheet.createRow(publicServiceRow++).apply {
             createCell(customerColumnIndex++).apply {
@@ -119,19 +108,17 @@ class ExcelBuilder(
             }
             createCell(customerColumnIndex++).apply {
                 cellStyle = style
-                setCellValue(calculateData.rate.toStringScale2())
+                setCellValue(rate.toStringScale2())
             }
             createCell(customerColumnIndex++).apply {
                 cellStyle = style
-                setCellValue(result.toStringScale2())
+                setCellValue(sum.toStringScale2())
             }
         }
 
-        resultSum += result
+        resultSum += sum
         val resultColumnIndex = 5
         sheet.getRow(publicServiceRow).getCell(resultColumnIndex).setCellValue(resultSum.toStringScale2())
-
-        return this
     }
 
     private fun Cell.setCellValue(value: Int) = this.setCellValue(value.toDouble())

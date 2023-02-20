@@ -2,6 +2,7 @@ package ru.kotlinschool.service
 
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.mockkConstructor
 import org.junit.jupiter.api.BeforeEach
 import ru.kotlinschool.persistent.entity.Bill
 import ru.kotlinschool.persistent.entity.CalculationType
@@ -18,7 +19,7 @@ import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
 import ru.kotlinschool.persistent.repository.MetricRepository
 import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
-import ru.kotlinschool.util.ExcelServiceImpl
+import ru.kotlinschool.util.ExcelBuilder
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -68,10 +69,11 @@ open class DataTest {
     val metric314 = mockk<Metric>()
     val metric321 = mockk<Metric>()
     val metric322 = mockk<Metric>()
-    val excelService = mockk<ExcelServiceImpl>()
+    val excelBuilder = mockk<ExcelBuilder>()
 
     @BeforeEach
     fun setUp() {
+        every { bill.billData } returns byteArrayOf(10, 2, 15, 11)
         every { managementCompany.name } returns "УК УЮТ"
         every { managementCompany.id } returns 1L
         every { house.id } returns 1L
@@ -120,6 +122,9 @@ open class DataTest {
     }
 
     fun fillFlat() {
+        every { flat1.id } returns 1L
+        every { flat2.id } returns 2L
+        every { flat3.id } returns 3L
         every { flat1.number } returns "1"
         every { flat2.number } returns "2"
         every { flat3.number } returns "3"
@@ -142,18 +147,25 @@ open class DataTest {
 
     fun repositorySettings(){
         every { billRep.save(any()) } returns bill
+        every { billRep.findBill(1L, 2023, 1) } returns bill
         every { houseRep.findById(any()) } returns Optional.of(house)
         every { publicServiceRep.findById(1L) } returns Optional.of(service1)
         every { publicServiceRep.findById(2L) } returns Optional.empty()
         every { rateRep.save(any()) } returns rate11
         every { publicServiceRep.save(any()) } returns service4
         every { houseRep.save(any()) } returns house
+        every { flatRep.save(any()) } returns flat1
+        every { flatRep.findByUserId(1L) } returns listOf(flat1, flat2)
+        every { flatRep.findById(1L) } returns Optional.of(flat1)
         every { managementCompanyRep.findByUserId(1L) } returns managementCompany
         every { managementCompanyRep.findAll() } returns listOf(managementCompany)
         every { managementCompanyRep.save(any()) } returns managementCompany
         every { houseRep.findHousesByAdminId(1L) } returns listOf(house)
         every { houseRep.findHousesByManagementCompany(1L) } returns listOf(house)
-        every { excelService.build(any()) } returns byteArrayOf(10, 2, 15, 11)
+        every { metricRep.save(any()) } returns metric111
+        mockkConstructor(ExcelBuilder::class)
+        every { anyConstructed<ExcelBuilder>().data(any()) } returns excelBuilder
+        every { excelBuilder.build() } returns byteArrayOf(10, 2, 15, 11)
     }
 
     fun fillMetrics1() {
