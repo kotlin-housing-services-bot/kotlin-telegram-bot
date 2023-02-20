@@ -2,18 +2,25 @@ package ru.kotlinschool.service
 
 import ru.kotlinschool.data.CalculateData
 import ru.kotlinschool.data.CalculationResultData
+import ru.kotlinschool.exception.ValidationException
 import java.math.BigDecimal
 
 interface CalculationStrategy {
 
     fun execute(data: CalculateData): CalculationResultData
 
+    fun <T> validate(value: T?, errMsg: String, predicate: (T) -> Boolean): T {
+        return value.also { predicate } ?: throw ValidationException(errMsg)
+    }
+
 }
 
 class MetricCalculationStrategy : CalculationStrategy {
 
     override fun execute(data: CalculateData): CalculationResultData {
-        val volume = BigDecimal.valueOf(data.metricCurrent!! - data.metricPrevious!!)
+        val volume = BigDecimal.valueOf(
+            validate(data.metricCurrent, "Не найдены текущие показания") { it != null }
+                    - validate(data.metricPrevious, "Не найдены предыдущие показания") { it != null })
         return CalculationResultData(data.rate.multiply(volume), volume)
     }
 
@@ -22,7 +29,7 @@ class MetricCalculationStrategy : CalculationStrategy {
 class AreaCalculationStrategy : CalculationStrategy {
 
     override fun execute(data: CalculateData): CalculationResultData {
-        val volume = BigDecimal.valueOf(data.area!!)
+        val volume = BigDecimal.valueOf(validate(data.area, "Нет данных о площади квартиры") { it != null })
         return CalculationResultData(data.rate.multiply(volume), volume)
     }
 
@@ -31,7 +38,14 @@ class AreaCalculationStrategy : CalculationStrategy {
 class ResidentsCalculationStrategy : CalculationStrategy {
 
     override fun execute(data: CalculateData): CalculationResultData {
-        return CalculationResultData(data.rate.multiply(BigDecimal.valueOf(data.numberOfResidents!!)))
+        return CalculationResultData(
+            data.rate.multiply(
+                BigDecimal.valueOf(validate(
+                    data.numberOfResidents,
+                    "Нет данных о количестве прописанных"
+                ) { it != null })
+            )
+        )
     }
 
 }
