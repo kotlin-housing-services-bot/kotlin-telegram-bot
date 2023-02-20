@@ -3,32 +3,57 @@ package ru.kotlinschool.bot.handlers
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.SessionManager
-import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.handlers.model.AddMetricsRequest
+import ru.kotlinschool.bot.handlers.model.FlatRegistrationRequest
+import ru.kotlinschool.bot.handlers.model.HandlerResponse
 import ru.kotlinschool.bot.handlers.model.PreviousBillRequest
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
+import ru.kotlinschool.bot.session.SessionManager
 import ru.kotlinschool.bot.ui.CANCEL_KEYBOARD
 import ru.kotlinschool.bot.ui.Command
 import ru.kotlinschool.bot.ui.NO_FLAT_USER
-import ru.kotlinschool.bot.ui.REQUEST_BILL_KEYBOARD
+import ru.kotlinschool.bot.ui.REQUEST_BILL_MONTH_KEYBOARD
+import ru.kotlinschool.bot.ui.REQUEST_BILL_YEAR_KEYBOARD
+import ru.kotlinschool.bot.ui.START_KEYBOARD_USER
 import ru.kotlinschool.bot.ui.addFlatRecommendationMessage
 import ru.kotlinschool.bot.ui.addMeterReadingsMessage
+import ru.kotlinschool.bot.ui.billFound
+import ru.kotlinschool.bot.ui.billNotFound
 import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
+import ru.kotlinschool.bot.ui.commandUnderDevelopmentMessage
+import ru.kotlinschool.bot.ui.createHousesKeyboard
 import ru.kotlinschool.bot.ui.createSelectFlatKeyboard
 import ru.kotlinschool.bot.ui.dataSavedMessage
 import ru.kotlinschool.bot.ui.retryMessage
 import ru.kotlinschool.bot.ui.selectFlatMessage
+import ru.kotlinschool.bot.ui.selectHouseMessage
 import ru.kotlinschool.bot.ui.selectMonthMessage
+import ru.kotlinschool.bot.ui.selectYearMessage
 import ru.kotlinschool.bot.ui.unknownError
+import ru.kotlinschool.data.FlatData
 import ru.kotlinschool.data.HouseData
+import ru.kotlinschool.data.PublicServiceData
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.exception.FlatNotRegisteredException
+import ru.kotlinschool.exception.HouseNotRegisteredException
 import ru.kotlinschool.exception.ParserException
+import ru.kotlinschool.exception.YearNotSupportedException
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.UserService
-import ru.kotlinschool.util.*
+import ru.kotlinschool.util.BotApiMethod
+import ru.kotlinschool.util.ResponseCallback
+import ru.kotlinschool.util.buildAnswerDocument
+import ru.kotlinschool.util.buildAnswerMessage
+import ru.kotlinschool.util.createFlatRegistrationMessages
+import ru.kotlinschool.util.createPublicServicesMessages
+import ru.kotlinschool.util.generateBillName
+import ru.kotlinschool.util.parseFlatData
+import ru.kotlinschool.util.parseMeterReadings
+import ru.kotlinschool.util.parseMonthMessageGetNumber
+import ru.kotlinschool.util.parseYear
+import java.io.ByteArrayInputStream
 
 /**
  * Обработчик команд от обычного пользователя.
@@ -61,7 +86,7 @@ class UserActionsHandler @Autowired constructor(
                 handleActionWithSession(message, userSession)
             }
         }.getOrElse { error ->
-            // TODO: log
+            error.printStackTrace()
             when (error) {
                 is EntityNotFoundException -> listOf(
                     buildAnswerMessage(message.chatId, error.message),
@@ -71,10 +96,21 @@ class UserActionsHandler @Autowired constructor(
                     buildAnswerMessage(message.chatId, error.message.orEmpty()),
                     buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
                 )
-                is FlatNotRegisteredException -> listOf(
-                    buildAnswerMessage(message.chatId, error.message.orEmpty()),
-                    buildAnswerMessage(message.chatId, addFlatRecommendationMessage, NO_FLAT_USER)
-                )
+                is FlatNotRegisteredException -> {
+                    sessionManager.resetUserSession(message.from.id)
+                    listOf(
+                        buildAnswerMessage(message.chatId, error.message.orEmpty()),
+                        buildAnswerMessage(message.chatId, addFlatRecommendationMessage, NO_FLAT_USER)
+                    )
+                }
+                is YearNotSupportedException,
+                is HouseNotRegisteredException -> {
+                    sessionManager.resetUserSession(message.from.id)
+                    listOf(
+                        buildAnswerMessage(message.chatId, error.message.orEmpty()),
+                        buildAnswerMessage(message.chatId, retryMessage, START_KEYBOARD_USER)
+                    )
+                }
                 else -> listOf(
                     buildAnswerMessage(message.chatId, unknownError),
                     buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
@@ -100,23 +136,21 @@ class UserActionsHandler @Autowired constructor(
     private fun handleTextAction(message: Message): List<SendMessage> =
         when (message.text) {
             Command.User.RegisterFlat.commandText -> {
-                sessionManager.startSession(message.from.id, SessionAwareRequest.FlatRegistrationRequest)
-
                 // TODO: use real management company
                 val houses = userService.getHouses(1).sortedBy(HouseData::id)
-                createHousesMessages(message.chatId, houses)
+                sessionManager.startSession(message.from.id, FlatRegistrationRequest.SelectHouseRequest(houses))
+
+                listOf(buildAnswerMessage(message.chatId, selectHouseMessage, createHousesKeyboard(houses)))
             }
 
             Command.User.RequestOldBill.commandText -> {
-                sessionManager.startSession(message.from.id, PreviousBillRequest.StartRequest)
-                listOf(buildAnswerMessage(message.chatId, selectMonthMessage, REQUEST_BILL_KEYBOARD))
+                sessionManager.startSession(message.from.id, PreviousBillRequest.SelectYearRequest)
+                listOf(buildAnswerMessage(message.chatId, selectYearMessage, REQUEST_BILL_YEAR_KEYBOARD))
             }
 
             Command.User.AddMeterReadings.commandText -> startAddingMeterReadings(message)
 
-            Command.User.RequestDraftBill.commandText -> TODO()
-
-            else -> listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage))
+            else -> listOf(buildAnswerMessage(message.chatId, commandUnderDevelopmentMessage))
         }
 
     /**
@@ -127,9 +161,12 @@ class UserActionsHandler @Autowired constructor(
      *
      * @see SessionAwareRequest
      */
-    private fun handleActionWithSession(message: Message, sessionAwareRequest: SessionAwareRequest): List<SendMessage> =
+    private fun handleActionWithSession(
+        message: Message,
+        sessionAwareRequest: SessionAwareRequest
+    ): List<BotApiMethod> =
         when (sessionAwareRequest) {
-            is SessionAwareRequest.FlatRegistrationRequest -> handleFlatRegistration(message)
+            is FlatRegistrationRequest -> handleFlatRegistration(message, sessionAwareRequest)
             is AddMetricsRequest -> handleMeterReadingsUpdate(message, sessionAwareRequest)
             is PreviousBillRequest -> handlePreviousBillRequest(message, sessionAwareRequest)
             else -> listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage))
@@ -146,15 +183,31 @@ class UserActionsHandler @Autowired constructor(
      * @see handleTextAction
      * @see startAddingMeterReadings
      *
+     * @throws HouseNotRegisteredException в случае, если пользователь ввеёл не прикреплённый дом
      */
-    @Throws(ParserException::class)
-    private fun handleFlatRegistration(message: Message): List<SendMessage> {
-        val (houseId, flatNum, area, residentsNum) = parseFlatData(message.text)
+    @Throws(HouseNotRegisteredException::class)
+    private fun handleFlatRegistration(message: Message, request: FlatRegistrationRequest): List<SendMessage> =
+        when (request) {
+            is FlatRegistrationRequest.SelectHouseRequest -> {
+                val selectedHouse = request.houses.firstOrNull { it.address == message.text }
+                    ?: throw HouseNotRegisteredException()
 
-        userService.registerFlat(message.from.id, message.chatId, houseId, flatNum, area, residentsNum)
+                sessionManager.startSession(message.from.id, FlatRegistrationRequest.FlatDataRequest(selectedHouse))
 
-        return startAddingMeterReadings(message, isInitial = true)
-    }
+                createFlatRegistrationMessages(message.chatId)
+            }
+            is FlatRegistrationRequest.FlatDataRequest -> {
+                val userId: Long = message.from.id
+                val chatId: Long = message.chatId
+
+                val houseId = request.house.id
+                val (flatNum, area, residentsNum) = parseFlatData(message.text)
+
+                val flatData = userService.registerFlat(userId, chatId, houseId, flatNum, area, residentsNum)
+
+                startAddingMeterReadings(message, flatData)
+            }
+        }
 
     /**
      * Запуск процедуры добавления значений счётчиков
@@ -166,14 +219,17 @@ class UserActionsHandler @Autowired constructor(
      * @throws FlatNotRegisteredException в случае, когда у пользователя нет зарегестрированных квартир
      */
     @Throws(FlatNotRegisteredException::class)
-    private fun startAddingMeterReadings(message: Message, isInitial: Boolean = false): List<SendMessage> {
-        val flats = userService.getFlats(message.from.id).takeIf { it.isNotEmpty() }
-            ?: throw FlatNotRegisteredException()
+    private fun startAddingMeterReadings(message: Message, flatData: FlatData? = null): List<SendMessage> {
+        val flats = if (flatData != null) {
+            listOf(flatData)
+        } else {
+            userService.getFlats(message.from.id).takeIf { it.isNotEmpty() } ?: throw FlatNotRegisteredException()
+        }
 
         sessionManager.startSession(message.from.id, AddMetricsRequest.SelectFlatRequest(flats))
 
         return mutableListOf<SendMessage>().apply {
-            if (isInitial) {
+            if (flatData != null) {
                 add(buildAnswerMessage(message.chatId, addMeterReadingsMessage))
             }
             add(buildAnswerMessage(message.chatId, selectFlatMessage, createSelectFlatKeyboard(flats)))
@@ -186,7 +242,7 @@ class UserActionsHandler @Autowired constructor(
      * в [AddMetricsRequest.AddRequest]. При [AddMetricsRequest.AddRequest] сохраняет данные и сбрасывает текущую сессию.
      *
      * @param message — Входное сообщение
-     * @param userSession — Текущая пользователься сессия
+     * @param request — Текущая пользователься сессия
      * @return Ответные сообщения с уведомлением о необходимости ввести данные или с уведомлением о результате
      *
      * @see AddMetricsRequest
@@ -194,15 +250,15 @@ class UserActionsHandler @Autowired constructor(
      * @throws FlatNotRegisteredException
      */
     @Throws(FlatNotRegisteredException::class)
-    private fun handleMeterReadingsUpdate(message: Message, userSession: AddMetricsRequest): List<SendMessage> =
-        when (userSession) {
+    private fun handleMeterReadingsUpdate(message: Message, request: AddMetricsRequest): List<SendMessage> =
+        when (request) {
             is AddMetricsRequest.SelectFlatRequest -> {
-                val flat = userSession.flats.firstOrNull { it.address == message.text }
+                val flat = request.flats.firstOrNull { it.address == message.text }
                     ?: throw FlatNotRegisteredException()
 
                 val publicServices = userService.getPublicServices(flat.id)
                     .filter { it.calculationType == CalculationType.BY_METER }
-                    .sortedBy { it.id }
+                    .sortedBy(PublicServiceData::id)
 
                 sessionManager.startSession(message.from.id, AddMetricsRequest.AddRequest(flat, publicServices))
 
@@ -210,8 +266,8 @@ class UserActionsHandler @Autowired constructor(
             }
 
             is AddMetricsRequest.AddRequest -> {
-                parseMeterReadings(message.text, userSession.publicServices).forEach { (serviceId, value) ->
-                    userService.addMetric(userSession.flat.id, serviceId, value)
+                parseMeterReadings(message.text, request.publicServices).forEach { (serviceId, value) ->
+                    userService.addMetric(request.flat.id, serviceId, value)
                 }
                 sessionManager.resetUserSession(message.from.id)
 
@@ -223,35 +279,56 @@ class UserActionsHandler @Autowired constructor(
      * Обработка получения старой платёжки в соответствии с текущей сессией пользователя
      *
      * @param message — Входное сообщение
-     * @param userSession — Текущая пользователься сессия
+     * @param request — Текущая пользователься сессия
      * @return Ответные сообщения с уведомлением о необходимости ввести данные или с уведомлением о результате
      *
      * @see PreviousBillRequest
      *
      * @throws FlatNotRegisteredException
      */
-    @Throws(FlatNotRegisteredException::class)
-    private fun handlePreviousBillRequest(message: Message, userSession: PreviousBillRequest): List<SendMessage> =
-        when (userSession) {
-            is PreviousBillRequest.StartRequest -> {
+    @Throws(FlatNotRegisteredException::class, YearNotSupportedException::class)
+    private fun handlePreviousBillRequest(message: Message, request: PreviousBillRequest): List<BotApiMethod> =
+        when (request) {
+            is PreviousBillRequest.SelectYearRequest -> {
+                val year = parseYear(message.text)
+
+                sessionManager.startSession(message.from.id, PreviousBillRequest.SelectMonthRequest(year))
+
+                listOf(buildAnswerMessage(message.chatId, selectMonthMessage, REQUEST_BILL_MONTH_KEYBOARD))
+            }
+
+            is PreviousBillRequest.SelectMonthRequest -> {
+                val month = parseMonthMessageGetNumber(message.text)
+
                 val flats = userService.getFlats(message.from.id).takeIf { it.isNotEmpty() }
                     ?: throw FlatNotRegisteredException()
 
-                sessionManager.startSession(message.from.id, PreviousBillRequest.SelectFlatRequest(flats))
+                val nextRequest = PreviousBillRequest.SelectFlatRequest(month, request.year, flats)
+                sessionManager.startSession(message.from.id, nextRequest)
 
-                val keyboard = createSelectFlatKeyboard(flats)
-                listOf(buildAnswerMessage(message.chatId, selectFlatMessage, keyboard))
+                listOf(buildAnswerMessage(message.chatId, selectFlatMessage, createSelectFlatKeyboard(flats)))
             }
+
             is PreviousBillRequest.SelectFlatRequest -> {
-                val flats = userSession.flats.first { it.address == message.text }
-                sessionManager.startSession(message.from.id, PreviousBillRequest.SelectMonthRequest(flats))
+                val flat = request.flats.firstOrNull { it.address == message.text }
+                    ?: throw FlatNotRegisteredException()
 
-                listOf(buildAnswerMessage(message.chatId, selectMonthMessage, REQUEST_BILL_KEYBOARD))
-            }
-            is PreviousBillRequest.SelectMonthRequest -> {
-//                TODO: parse month and get bill
-//                userService.getBill()
-                TODO()
+                runCatching {
+                    val data = userService.getBill(flat.id, request.year, request.month)
+                    val name = generateBillName(flat.address, request.month, request.year)
+                    val inputFile = InputFile(ByteArrayInputStream(data), name)
+
+                    listOf(
+                        buildAnswerMessage(message.chatId, billFound),
+                        buildAnswerDocument(message.chatId, inputFile)
+                    )
+                }.getOrElse {
+                    if (it is EntityNotFoundException) {
+                        listOf(buildAnswerMessage(message.chatId, billNotFound))
+                    } else {
+                        throw it
+                    }
+                }
             }
         }
 }

@@ -22,6 +22,7 @@ import ru.kotlinschool.persistent.repository.ManagementCompanyRepository
 import ru.kotlinschool.persistent.repository.PublicServiceRepository
 import ru.kotlinschool.persistent.repository.RateRepository
 import ru.kotlinschool.util.ExcelBuilder
+import ru.kotlinschool.util.generateBillName
 import java.math.BigDecimal
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
@@ -158,7 +159,7 @@ class AdminServiceImpl @Autowired constructor(
             val content = ExcelBuilder(calculationService).data(param).build()
             billRep.save(Bill(it, year, month, content))
 
-            BillServiceResultData(it.userId, "Платеж по $address за месяц $month $year.xlsx", content)
+            BillServiceResultData(it.chatId, generateBillName(address, month, year), content)
         }
     }
 

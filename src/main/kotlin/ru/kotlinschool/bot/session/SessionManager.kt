@@ -1,7 +1,8 @@
-package ru.kotlinschool.bot
+package ru.kotlinschool.bot.session
 
 import org.springframework.stereotype.Component
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
+import java.util.concurrent.ConcurrentHashMap
 
 /**
  * In-memory менеджер сессий Telegram-пользователей
@@ -11,7 +12,7 @@ import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
 @Component
 class SessionManager {
 
-    private val sessionAwareRequestMap = HashMap<Long, SessionAwareRequest>()
+    private val sessionAwareRequestMap = ConcurrentHashMap<Long, SessionAwareRequest>()
 
     fun startSession(userId: Long, sessionType: SessionAwareRequest) {
         sessionAwareRequestMap[userId] = sessionType

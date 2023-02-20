@@ -1,17 +1,16 @@
 package ru.kotlinschool.bot.handlers.model
 
-import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
+import ru.kotlinschool.util.BotApiMethod
 
-data class BroadcastData(val message: SendMessage, val document: SendDocument? = null)
 
 sealed class HandlerResponse {
 
-    class Basic(val messages: List<SendMessage>) : HandlerResponse()
+    class Basic(val messages: List<BotApiMethod>) : HandlerResponse()
 
     class Broadcast(
-        val messages: List<SendMessage>,
-        val broadcastMessages: List<BroadcastData>
+        val messagesToAdmin: List<SendMessage>,
+        val broadcastMessagesToUsers: List<BotApiMethod>
     ) : HandlerResponse()
 }
 

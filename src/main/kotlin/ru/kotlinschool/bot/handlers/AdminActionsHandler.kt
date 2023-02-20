@@ -2,22 +2,42 @@ package ru.kotlinschool.bot.handlers
 
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Component
+import org.telegram.telegrambots.meta.api.methods.PartialBotApiMethod
 import org.telegram.telegrambots.meta.api.methods.send.SendDocument
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage
 import org.telegram.telegrambots.meta.api.objects.InputFile
 import org.telegram.telegrambots.meta.api.objects.Message
-import ru.kotlinschool.bot.SessionManager
-import ru.kotlinschool.bot.handlers.model.BroadcastData
 import ru.kotlinschool.bot.handlers.model.HandlerResponse
-import ru.kotlinschool.bot.handlers.model.UpdateRatesRequest
 import ru.kotlinschool.bot.handlers.model.SessionAwareRequest
-import ru.kotlinschool.bot.ui.*
+import ru.kotlinschool.bot.handlers.model.UpdateRatesRequest
+import ru.kotlinschool.bot.session.SessionManager
+import ru.kotlinschool.bot.ui.CANCEL_KEYBOARD
+import ru.kotlinschool.bot.ui.Command
+import ru.kotlinschool.bot.ui.NO_FLAT_USER
+import ru.kotlinschool.bot.ui.START_KEYBOARD_USER
+import ru.kotlinschool.bot.ui.addFlatRecommendationMessage
+import ru.kotlinschool.bot.ui.addMeterReadingNotification
+import ru.kotlinschool.bot.ui.billsSentMessage
+import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
+import ru.kotlinschool.bot.ui.createHousesKeyboard
+import ru.kotlinschool.bot.ui.dataSavedMessage
+import ru.kotlinschool.bot.ui.newPaymentBill
+import ru.kotlinschool.bot.ui.notificationsSentMessage
+import ru.kotlinschool.bot.ui.retryMessage
+import ru.kotlinschool.bot.ui.selectHouseMessage
+import ru.kotlinschool.bot.ui.unknownError
+import ru.kotlinschool.exception.EntityNotFoundException
+import ru.kotlinschool.exception.FlatNotRegisteredException
+import ru.kotlinschool.exception.HouseNotRegisteredException
+import ru.kotlinschool.exception.ParserException
+import ru.kotlinschool.exception.YearNotSupportedException
 import ru.kotlinschool.service.AdminService
 import ru.kotlinschool.util.ResponseCallback
 import ru.kotlinschool.util.buildAnswerMessage
 import ru.kotlinschool.util.createRatesUpdateMessages
 import ru.kotlinschool.util.parseRates
 import java.io.ByteArrayInputStream
+import java.io.Serializable
 
 /**
  * Обработчик команд от админ-пользователя.
@@ -41,10 +61,37 @@ class AdminActionsHandler @Autowired constructor(
     fun handle(message: Message, callback: ResponseCallback) {
         val sessionType = sessionManager.getUserSession(message.from.id)
 
-        val response = if (sessionType == null) {
-            handleTextAction(message)
-        } else {
-            handleActionWithSession(message, sessionType)
+        val response = runCatching {
+            if (sessionType == null) {
+                handleTextAction(message)
+            } else {
+                handleActionWithSession(message, sessionType)
+            }
+        }.getOrElse { error ->
+            error.printStackTrace()
+            val messages = when (error) {
+                is EntityNotFoundException -> listOf(
+                    buildAnswerMessage(message.chatId, error.message),
+                    buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
+                )
+                is ParserException -> listOf(
+                    buildAnswerMessage(message.chatId, error.message.orEmpty()),
+                    buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
+                )
+                is HouseNotRegisteredException -> {
+                    sessionManager.resetUserSession(message.from.id)
+                    listOf(
+                        buildAnswerMessage(message.chatId, error.message.orEmpty()),
+                        buildAnswerMessage(message.chatId, retryMessage, START_KEYBOARD_USER)
+                    )
+                }
+                else -> listOf(
+                    buildAnswerMessage(message.chatId, unknownError),
+                    buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
+                )
+            }
+
+            HandlerResponse.Basic(messages)
         }
         callback(response)
     }
@@ -65,12 +112,12 @@ class AdminActionsHandler @Autowired constructor(
      */
     private fun handleTextAction(message: Message): HandlerResponse =
         when (message.text) {
-            Command.Admin.UpdateRates.commandText -> {
-                handleUpdateRatesWithoutSession(message)
-            }
-            Command.Admin.TriggerCalculations.commandText -> {
-                handleTriggerCalculationWithoutSession(message)
-            }
+            Command.Admin.UpdateRates.commandText -> handleUpdateRatesWithoutSession(message)
+
+            Command.Admin.TriggerCalculations.commandText -> handleTriggerCalculationWithoutSession(message)
+
+            Command.Admin.TriggerNotify.commandText -> handleNotificationWithoutSession(message)
+
             else -> HandlerResponse.Basic(listOf(buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage)))
         }
 
@@ -111,8 +158,7 @@ class AdminActionsHandler @Autowired constructor(
         when (userSession) {
             is UpdateRatesRequest.SelectHouseRequest -> {
                 val selectedHouse = userSession.houses.first { it.address == message.text }
-                val services = adminService.getPublicServices(selectedHouse.id)
-                    .sortedBy { it.id }
+                val services = adminService.getPublicServices(selectedHouse.id).sortedBy { it.id }
 
                 sessionManager.startSession(message.from.id, UpdateRatesRequest.UpdateRequest(services))
 
@@ -130,29 +176,36 @@ class AdminActionsHandler @Autowired constructor(
             }
         }
 
-    private fun handleTriggerCalculationWithoutSession(message: Message) : HandlerResponse.Broadcast {
+    private fun handleTriggerCalculationWithoutSession(message: Message): HandlerResponse.Broadcast {
+        val messageId: Long = message.chatId
+        val messagesToAdmin: List<SendMessage> = listOf(buildAnswerMessage(messageId, billsSentMessage))
 
-        val messageIdLong = message.chatId
-        val messagesToAdmin: List<SendMessage> = listOf(
-            buildAnswerMessage(messageIdLong, billsSentMessage)
-        )
-
-        val broadcastToUsers: List<BroadcastData> = adminService
-            .getHouses(messageIdLong)
+        val broadcastToUsers: List<PartialBotApiMethod<out Serializable>> = adminService
+            .getHouses(messageId)
             .flatMap { adminService.calculateBills(it.id) }
-            .map {
-                val userIdStr = it.userId.toString()
-                BroadcastData(
-                    SendMessage().apply {
-                        chatId = userIdStr
-                        text = newPaymentBill
-                    },
+            .flatMap {
+                listOf(
+                    buildAnswerMessage(it.chatId, newPaymentBill),
                     SendDocument().apply {
-                        chatId = userIdStr
+                        chatId = it.chatId.toString()
                         document = InputFile(ByteArrayInputStream(it.data), it.fileName)
                     }
                 )
             }
+
+        return HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
+    }
+
+    private fun handleNotificationWithoutSession(message: Message): HandlerResponse.Broadcast {
+        val messageId: Long = message.chatId
+        val messagesToAdmin: List<SendMessage> = listOf(buildAnswerMessage(messageId, notificationsSentMessage))
+
+        val broadcastToUsers: List<PartialBotApiMethod<out Serializable>> = adminService
+            .getHouses(messageId)
+            .flatMap { adminService.getUsers(it.id) }
+            .toSet()
+            .map { buildAnswerMessage(it.id, addMeterReadingNotification) }
+
         return HandlerResponse.Broadcast(messagesToAdmin, broadcastToUsers)
     }
 }

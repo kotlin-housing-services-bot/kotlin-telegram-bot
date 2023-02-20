@@ -13,6 +13,7 @@ sealed class Command(val commandText: String) {
 
     sealed class Admin(message: String) : Command(message) {
 
+        object TriggerNotify : Admin("🗓 Напомнить о необходимости внесения данных")
         object TriggerCalculations : Admin("🧮 Провести вычисления")
         object UpdateRates : Admin("🎚 Обновить тарифы")
     }
