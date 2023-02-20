@@ -156,10 +156,10 @@ class AdminServiceImpl @Autowired constructor(
                 }
             )
             //Расчитываем квитанцию
-            var content = excelService.build(param)
+            val content = excelService.build(param)
             billRep.save(Bill(it, year, month, content))
 
-            BillServiceResultData(it.userId, generateBillName(address, month, year), content)
+            BillServiceResultData(it.chatId, generateBillName(address, month, year), content)
         }
     }
 
