@@ -26,6 +26,7 @@ import ru.kotlinschool.bot.ui.unknownError
 import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.exception.HouseNotRegisteredException
 import ru.kotlinschool.exception.ParserException
+import ru.kotlinschool.exception.ValidationException
 import ru.kotlinschool.service.AdminService
 import ru.kotlinschool.util.ResponseCallback
 import ru.kotlinschool.util.buildAnswerMessage
@@ -76,6 +77,12 @@ class AdminActionsHandler(
                 )
                 is HouseNotRegisteredException -> {
                     sessionManager.resetUserSession(message.from.id)
+                    listOf(
+                        buildAnswerMessage(chatId, error.message.orEmpty()),
+                        buildAnswerMessage(chatId, retryMessage, START_KEYBOARD_USER)
+                    )
+                }
+                is ValidationException -> {
                     listOf(
                         buildAnswerMessage(chatId, error.message.orEmpty()),
                         buildAnswerMessage(chatId, retryMessage, START_KEYBOARD_USER)

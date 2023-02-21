@@ -121,8 +121,7 @@ class AdminServiceImpl(
             .collect(Collectors.toMap(PublicService::id, PublicService::rates))
             .mapValues { (_, v) ->
                 v.filter {
-                    it.dateBegin.isBefore(calculationData)
-                            || it.dateBegin.isEqual(calculationData)
+                    it.dateBegin.isBefore(calculationData) || it.dateBegin.isEqual(calculationData)
                 }.maxBy { it.dateBegin }.sum
             }
         val year = calculationData.year
@@ -158,7 +157,10 @@ class AdminServiceImpl(
             val content = ExcelBuilder(calculationService).data(param).build()
 
             val oldBill = billRep.findBill(it.id, year, month)
-            if (oldBill == null) {
+            if (oldBill != null) {
+                oldBill.billData = content
+                billRep.save(oldBill)
+            } else {
                 billRep.save(Bill(it, year, month, content))
             }
 

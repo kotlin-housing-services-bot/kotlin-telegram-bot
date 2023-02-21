@@ -18,27 +18,27 @@ class Bill(
     @ManyToOne
     @JoinColumn(name = "flat_id")
     @NotNull
-    val flat: Flat,
+    var flat: Flat,
 
     /**
      * Год
      */
     @NotNull
     @Column(name = "bill_year")
-    val year: Int,
+    var year: Int,
 
     /**
      * Месяц
      */
     @NotNull
     @Column(name = "bill_month")
-    val month: Int,
+    var month: Int,
 
     /**
      * Квитанция
      */
     @Lob
-    val billData: ByteArray,
+    var billData: ByteArray,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)

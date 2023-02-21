@@ -45,7 +45,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
             2 -> flatNumTokens[1]
             else -> throw ParserException(flatNumErrorMessage)
         }
-        validate(flatNum, flatNumErrorMessage) { it.matches("""\d+|[А-Я]""".toRegex()).not() }
+        validate(flatNum, flatNumErrorMessage) { it.matches("""\d+|[А-Я]""".toRegex()) }
 
         // area
         val areaTokens = lines[1].split(SPACE_CHAR_DELIMETER)
@@ -63,7 +63,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
             2 -> residentsTokens[1]
             else -> throw ParserException(residentsErrorMessage)
         }.toLongOrNull() ?: throw ParserException(residentsErrorMessage)
-        validate(area, residentsErrorMessage) { it > 0 && (area / residentsNum) >= 18 }
+        validate(area, residentsErrorMessage) { it > 0 }
 
         FlatRegistrationData(flatNum, area, residentsNum)
     } else throw ParserException(formatErrorMessage)

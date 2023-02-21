@@ -40,6 +40,7 @@ import ru.kotlinschool.exception.FlatNotRegisteredException
 import ru.kotlinschool.exception.HouseNotRegisteredException
 import ru.kotlinschool.exception.ParserException
 import ru.kotlinschool.exception.TooManyMetricAdditionsException
+import ru.kotlinschool.exception.ValidationException
 import ru.kotlinschool.exception.YearNotSupportedException
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.UserService
@@ -118,6 +119,12 @@ class UserActionsHandler(
                     listOf(
                         buildAnswerMessage(chatId, error.message.orEmpty()),
                         buildAnswerMessage(chatId, anotherTimeMessage, START_KEYBOARD_USER)
+                    )
+                }
+                is ValidationException -> {
+                    listOf(
+                        buildAnswerMessage(chatId, error.message.orEmpty()),
+                        buildAnswerMessage(chatId, retryMessage, START_KEYBOARD_USER)
                     )
                 }
                 else -> {
