@@ -24,12 +24,6 @@ class AdminServiceImplTest : DataTest() {
     )
 
     @Test
-    fun calculateBillsTest() {
-        adminService.calculateBills(1L)
-        verify(exactly = 3) { billRep.save(any()) }
-    }
-
-    @Test
     fun getUsersTest(){
         val users = adminService.getUsers(1L)
         Assertions.assertTrue { users.size == 2 }

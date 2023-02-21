@@ -18,5 +18,4 @@ class MetricCalculationStrategyTest {
             calculationStrategy.execute(calculateData)
         }
     }
-
 }

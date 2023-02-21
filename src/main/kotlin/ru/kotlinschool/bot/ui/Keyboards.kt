@@ -57,9 +57,9 @@ val START_KEYBOARD_USER: ReplyKeyboard = ReplyKeyboardMarkup().apply {
 
 val START_KEYBOARD_ADMIN: ReplyKeyboard = ReplyKeyboardMarkup().apply {
     keyboard = listOf(
-        KeyboardRow(listOf(KeyboardButton(Command.Admin.TriggerNotify.commandText))),
         KeyboardRow(listOf(KeyboardButton(Command.Admin.UpdateRates.commandText))),
         KeyboardRow(listOf(KeyboardButton(Command.Admin.TriggerCalculations.commandText))),
+        KeyboardRow(listOf(KeyboardButton(Command.Admin.TriggerNotify.commandText))),
     )
     resizeKeyboard = true
 }

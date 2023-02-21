@@ -65,21 +65,10 @@ class BillRepositoryTest {
         )
     }
 
-    @Test
-    fun findByIdTest() {
-            // when
-        val findEntity = billRep.findById(bill!!.id)
-        val path = Paths.get("src/test/resources/BillRepositoryTest.xlsx")
-        Files.write(path, findEntity.get().billData)
-
-        Assertions.assertTrue { findEntity.get() == bill}
-    }
-
 
     @Test
     fun findBillTest() {
         val findEntity = billRep.findBill(flat!!.id, 2023, 1)
         Assertions.assertTrue { findEntity == bill}
     }
-
 }

@@ -244,7 +244,11 @@ class UserActionsHandler(
      * @throws FlatNotRegisteredException в случае, когда у пользователя нет зарегестрированных квартир
      */
     @Throws(FlatNotRegisteredException::class)
-    private fun startAddingMeterReadings(message: Message, flatData: FlatData? = null, isInitial: Boolean = false): List<SendMessage> {
+    private fun startAddingMeterReadings(
+        message: Message,
+        flatData: FlatData? = null,
+        isInitial: Boolean = false
+    ): List<SendMessage> {
         val userId = message.from.id
         val flats = if (flatData != null) {
             listOf(flatData)
@@ -266,7 +270,8 @@ class UserActionsHandler(
     /**
      * Обработка добавления данных счётчика в соответствии с текущей сессией пользователя.
      * При  текущей сессии [AddMetricsRequest.SelectFlatRequest] пригласит ввести значения счётчика и переведёт
-     * в [AddMetricsRequest.AddRequest]. При [AddMetricsRequest.AddRequest] сохраняет данные и сбрасывает текущую сессию.
+     * в [AddMetricsRequest.AddRequest]. При [AddMetricsRequest.AddRequest] сохраняет данные и сбрасывает
+     * текущую сессию.
      *
      * @param message — Входное сообщение
      * @param request — Текущая пользователься сессия
