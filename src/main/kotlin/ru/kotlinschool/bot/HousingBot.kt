@@ -1,6 +1,5 @@
 package ru.kotlinschool.bot
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.stereotype.Component
 import org.telegram.telegrambots.bots.TelegramLongPollingBot
@@ -29,7 +28,7 @@ import ru.kotlinschool.util.buildAnswerMessage
  * @see SessionManager
  */
 @Component
-class HousingBot @Autowired constructor(
+class HousingBot(
     private val userActionsHandler: UserActionsHandler,
     private val adminActionsHandler: AdminActionsHandler,
     private val sessionManager: SessionManager,
@@ -61,20 +60,21 @@ class HousingBot @Autowired constructor(
      * @see handleTextAction — обработка основных действий
      */
     private fun handleCommand(message: Message, isAdmin: Boolean) {
+        val chatId = message.chatId
         when (message.text) {
             Command.Start.commandText -> {
                 // reset old sessions on start
                 sessionManager.resetUserSession(message.from.id)
 
                 val keyboard = if (isAdmin) START_KEYBOARD_ADMIN else START_KEYBOARD_USER
-                buildAnswerMessage(message.chatId, welcomeMessage, keyboard).let(::execute)
+                buildAnswerMessage(chatId, welcomeMessage, keyboard).let(::execute)
             }
             Command.Stop.commandText -> {
                 sessionManager.resetUserSession(message.from.id)
 
-                buildAnswerMessage(message.chatId, farewellMessage, CLEARED_KEYBOARD).let(::execute)
+                buildAnswerMessage(chatId, farewellMessage, CLEARED_KEYBOARD).let(::execute)
             }
-            else -> buildAnswerMessage(message.chatId, commandNotSupportedErrorMessage).let(::execute)
+            else -> buildAnswerMessage(chatId, commandNotSupportedErrorMessage).let(::execute)
         }
     }
 

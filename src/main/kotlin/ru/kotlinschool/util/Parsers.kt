@@ -6,11 +6,14 @@ import ru.kotlinschool.bot.handlers.entities.MappedRegistrationData
 import ru.kotlinschool.bot.ui.flatAreaErrorMessage
 import ru.kotlinschool.bot.ui.flatNumErrorMessage
 import ru.kotlinschool.bot.ui.formatErrorMessage
+import ru.kotlinschool.bot.ui.monthErrorMessage
 import ru.kotlinschool.bot.ui.residentsErrorMessage
 import ru.kotlinschool.bot.ui.yearError
 import ru.kotlinschool.data.PublicServiceData
 import ru.kotlinschool.exception.ParserException
 import ru.kotlinschool.exception.YearNotSupportedException
+import ru.kotlinschool.exception.validate
+import java.math.BigDecimal
 import java.time.Year
 
 private const val FLAT_REQUIRED_LINES = 3
@@ -42,6 +45,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
             2 -> flatNumTokens[1]
             else -> throw ParserException(flatNumErrorMessage)
         }
+        validate(flatNum, flatNumErrorMessage) { it.matches("""\d+|[А-Я]""".toRegex()).not() }
 
         // area
         val areaTokens = lines[1].split(SPACE_CHAR_DELIMETER)
@@ -50,6 +54,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
             2 -> areaTokens[1]
             else -> throw ParserException(flatAreaErrorMessage)
         }.toDoubleOrNull() ?: throw ParserException(flatAreaErrorMessage)
+        validate(area, flatAreaErrorMessage) { it > 0.0 && it < 1_000.0 }
 
         // residents
         val residentsTokens = lines[2].split(SPACE_CHAR_DELIMETER)
@@ -58,6 +63,7 @@ fun parseFlatData(text: String): FlatRegistrationData {
             2 -> residentsTokens[1]
             else -> throw ParserException(residentsErrorMessage)
         }.toLongOrNull() ?: throw ParserException(residentsErrorMessage)
+        validate(area, residentsErrorMessage) { it > 0 && (area / residentsNum) >= 18 }
 
         FlatRegistrationData(flatNum, area, residentsNum)
     } else throw ParserException(formatErrorMessage)
@@ -88,6 +94,7 @@ fun parseMeterReadings(text: String, publicServices: List<PublicServiceData>): L
                 2 -> tokens[1]
                 else -> throw ParserException(formatErrorMessage)
             }.toDoubleOrNull() ?: throw ParserException(formatErrorMessage)
+            validate(value, formatErrorMessage) { it > 0 }
 
             MappedRegistrationData(publicServices[index].id, value)
         }
@@ -119,6 +126,7 @@ fun parseRates(text: String, publicServices: List<PublicServiceData>): List<Mapp
                 2 -> tokens[1].toBigDecimalOrNull() ?: throw ParserException(formatErrorMessage)
                 else -> throw ParserException(formatErrorMessage)
             }
+            validate(value, formatErrorMessage) { it > BigDecimal.ZERO && it < BigDecimal.valueOf(10_000) }
 
             MappedRatesData(publicServices[index].id, value)
         }
@@ -127,7 +135,11 @@ fun parseRates(text: String, publicServices: List<PublicServiceData>): List<Mapp
 
 @Throws(ParserException::class)
 fun parseMonthMessageGetNumber(text: String): Int {
-    return Integer.valueOf(text.split(LINE_DELIMETER)[1].trim())
+    return Integer
+        .valueOf(text.split(LINE_DELIMETER)[1].trim())
+        .also { month ->
+            validate(month, monthErrorMessage) { it in 1..12 }
+        }
 }
 
 /**
@@ -138,7 +150,7 @@ fun parseMonthMessageGetNumber(text: String): Int {
 @Throws(ParserException::class, YearNotSupportedException::class)
 fun parseYear(text: String): Int {
     val year = text.toIntOrNull() ?: throw ParserException(yearError)
-    if (year  != Year.now().value)
+    if (year != Year.now().value)
         throw YearNotSupportedException()
 
     return year

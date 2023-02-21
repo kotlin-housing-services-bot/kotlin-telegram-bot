@@ -1,6 +1,5 @@
 package ru.kotlinschool.service
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.kotlinschool.data.BillData
 import ru.kotlinschool.data.BillServiceData
@@ -29,7 +28,7 @@ import java.time.temporal.TemporalAdjusters
 import java.util.stream.Collectors
 
 @Service
-class AdminServiceImpl @Autowired constructor(
+class AdminServiceImpl(
     private val managementCompanyRep: ManagementCompanyRepository,
     private val houseRep: HouseRepository,
     private val rateRep: RateRepository,

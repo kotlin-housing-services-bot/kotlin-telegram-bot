@@ -1,6 +1,5 @@
 package ru.kotlinschool.service
 
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.stereotype.Service
 import ru.kotlinschool.data.FlatData
 import ru.kotlinschool.data.HouseData
@@ -20,7 +19,7 @@ import java.time.LocalDate
 
 
 @Service
-class UserServiceImpl @Autowired constructor(
+class UserServiceImpl(
     private val managementCompanyRep: ManagementCompanyRepository,
     private val houseRep: HouseRepository,
     private val flatRep: FlatRepository,
