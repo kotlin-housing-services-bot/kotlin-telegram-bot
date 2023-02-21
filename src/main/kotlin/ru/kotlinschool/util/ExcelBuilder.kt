@@ -6,9 +6,7 @@ import org.apache.poi.ss.usermodel.HorizontalAlignment
 import org.apache.poi.ss.usermodel.Sheet
 import org.apache.poi.ss.usermodel.Workbook
 import org.apache.poi.xssf.usermodel.XSSFWorkbook
-import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.core.io.ClassPathResource
-import org.springframework.stereotype.Component
 import ru.kotlinschool.data.BillData
 import ru.kotlinschool.data.CalculateData
 import ru.kotlinschool.service.CalculationService
@@ -18,7 +16,7 @@ import java.math.BigDecimal
 import java.math.RoundingMode
 
 class ExcelBuilder(
-     private val calculationService: CalculationService
+    private val calculationService: CalculationService
 ) {
     private val billTemplate = "bill-template.xlsx"
     private val file = FileInputStream(ClassPathResource(billTemplate).file)
@@ -31,12 +29,12 @@ class ExcelBuilder(
     fun data(billData: BillData): ExcelBuilder {
         billData.run {
             addManagementCompany(1, managementCompanyName)
-            addOwner(address, area!!, numberOfResidents!!)
+            addOwner(address, area, numberOfResidents)
             services.forEachIndexed { i, billServiceData ->
-                 billServiceData.run {
+                billServiceData.run {
                     val calculateData = CalculateData(rate, area, numberOfResidents, metricCurrent, metricPrevious)
-                    val (volume, sum) = calculationService.execute(calculationType, calculateData).run { volume to sum }
-                    addPublicService(i, name, unit, rate, sum, volume)
+                    runCatching { calculationService.execute(calculationType, calculateData).run { volume to sum } }
+                        .map { (volume, sum) -> addPublicService(i, name, unit, rate, sum, volume) }
                 }
             }
         }

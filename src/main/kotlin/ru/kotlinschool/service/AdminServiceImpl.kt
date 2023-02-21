@@ -104,7 +104,7 @@ class AdminServiceImpl @Autowired constructor(
     /**
      * Все собственники квартир
      */
-    override fun getUsers(houseId: Long): List<UserData>{
+    override fun getUsers(houseId: Long): List<UserData> {
         return houseRep.findById(houseId)
             .orElseThrow { EntityNotFoundException("Не найден дом с ид = $houseId") }
             .flats.map { UserData(it.userId, it.chatId) }.distinct()
@@ -157,7 +157,11 @@ class AdminServiceImpl @Autowired constructor(
             )
             //Расчитываем квитанцию
             val content = ExcelBuilder(calculationService).data(param).build()
-            billRep.save(Bill(it, year, month, content))
+
+            val oldBill = billRep.findBill(it.id, year, month)
+            if (oldBill == null) {
+                billRep.save(Bill(it, year, month, content))
+            }
 
             BillServiceResultData(it.chatId, generateBillName(address, month, year), content)
         }
@@ -166,8 +170,8 @@ class AdminServiceImpl @Autowired constructor(
     private fun List<Metric>.metricGrouping(predicate: (Metric) -> Boolean): Map<PublicService, Double> {
         return this.filter(predicate)
             .groupBy(Metric::publicService).mapValues { (_, v) ->
-            v.maxBy(Metric::actionDate).value
-        }
+                v.maxBy(Metric::actionDate).value
+            }
     }
 
     private fun checkIfDateInMonth(inDate: LocalDate, dateOfMonth: LocalDate): Boolean {

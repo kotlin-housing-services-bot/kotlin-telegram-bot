@@ -19,6 +19,7 @@ import ru.kotlinschool.bot.ui.REQUEST_BILL_YEAR_KEYBOARD
 import ru.kotlinschool.bot.ui.START_KEYBOARD_USER
 import ru.kotlinschool.bot.ui.addFlatRecommendationMessage
 import ru.kotlinschool.bot.ui.addMeterReadingsMessage
+import ru.kotlinschool.bot.ui.anotherTimeMessage
 import ru.kotlinschool.bot.ui.billFound
 import ru.kotlinschool.bot.ui.billNotFound
 import ru.kotlinschool.bot.ui.commandNotSupportedErrorMessage
@@ -39,6 +40,7 @@ import ru.kotlinschool.exception.EntityNotFoundException
 import ru.kotlinschool.exception.FlatNotRegisteredException
 import ru.kotlinschool.exception.HouseNotRegisteredException
 import ru.kotlinschool.exception.ParserException
+import ru.kotlinschool.exception.TooManyMetricAdditionsException
 import ru.kotlinschool.exception.YearNotSupportedException
 import ru.kotlinschool.persistent.entity.CalculationType
 import ru.kotlinschool.service.UserService
@@ -103,18 +105,28 @@ class UserActionsHandler @Autowired constructor(
                         buildAnswerMessage(message.chatId, addFlatRecommendationMessage, NO_FLAT_USER)
                     )
                 }
-                is YearNotSupportedException,
-                is HouseNotRegisteredException -> {
+                is HouseNotRegisteredException,
+                is YearNotSupportedException -> {
                     sessionManager.resetUserSession(message.from.id)
                     listOf(
                         buildAnswerMessage(message.chatId, error.message.orEmpty()),
                         buildAnswerMessage(message.chatId, retryMessage, START_KEYBOARD_USER)
                     )
                 }
-                else -> listOf(
-                    buildAnswerMessage(message.chatId, unknownError),
-                    buildAnswerMessage(message.chatId, retryMessage, CANCEL_KEYBOARD)
-                )
+                is TooManyMetricAdditionsException -> {
+                    sessionManager.resetUserSession(message.from.id)
+                    listOf(
+                        buildAnswerMessage(message.chatId, error.message.orEmpty()),
+                        buildAnswerMessage(message.chatId, anotherTimeMessage, START_KEYBOARD_USER)
+                    )
+                }
+                else -> {
+                    sessionManager.resetUserSession(message.from.id)
+                    listOf(
+                        buildAnswerMessage(message.chatId, unknownError),
+                        buildAnswerMessage(message.chatId, anotherTimeMessage, START_KEYBOARD_USER)
+                    )
+                }
             }
         }
 
@@ -205,7 +217,7 @@ class UserActionsHandler @Autowired constructor(
 
                 val flatData = userService.registerFlat(userId, chatId, houseId, flatNum, area, residentsNum)
 
-                startAddingMeterReadings(message, flatData)
+                startAddingMeterReadings(message, flatData, isInitial = true)
             }
         }
 
@@ -219,14 +231,18 @@ class UserActionsHandler @Autowired constructor(
      * @throws FlatNotRegisteredException в случае, когда у пользователя нет зарегестрированных квартир
      */
     @Throws(FlatNotRegisteredException::class)
-    private fun startAddingMeterReadings(message: Message, flatData: FlatData? = null): List<SendMessage> {
+    private fun startAddingMeterReadings(
+        message: Message,
+        flatData: FlatData? = null,
+        isInitial: Boolean = false
+    ): List<SendMessage> {
         val flats = if (flatData != null) {
             listOf(flatData)
         } else {
             userService.getFlats(message.from.id).takeIf { it.isNotEmpty() } ?: throw FlatNotRegisteredException()
         }
 
-        sessionManager.startSession(message.from.id, AddMetricsRequest.SelectFlatRequest(flats))
+        sessionManager.startSession(message.from.id, AddMetricsRequest.SelectFlatRequest(flats, isInitial))
 
         return mutableListOf<SendMessage>().apply {
             if (flatData != null) {
@@ -260,14 +276,15 @@ class UserActionsHandler @Autowired constructor(
                     .filter { it.calculationType == CalculationType.BY_METER }
                     .sortedBy(PublicServiceData::id)
 
-                sessionManager.startSession(message.from.id, AddMetricsRequest.AddRequest(flat, publicServices))
+                val nextRequest = AddMetricsRequest.AddRequest(flat, publicServices, isInitial = request.isInitial)
+                sessionManager.startSession(message.from.id, nextRequest)
 
                 createPublicServicesMessages(message.chatId, publicServices)
             }
 
             is AddMetricsRequest.AddRequest -> {
                 parseMeterReadings(message.text, request.publicServices).forEach { (serviceId, value) ->
-                    userService.addMetric(request.flat.id, serviceId, value)
+                    userService.addMetric(request.flat.id, serviceId, value, request.isInitial)
                 }
                 sessionManager.resetUserSession(message.from.id)
 

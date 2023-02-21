@@ -34,7 +34,11 @@ sealed class PreviousBillRequest : SessionAwareRequest() {
 
 sealed class AddMetricsRequest : SessionAwareRequest() {
 
-    data class SelectFlatRequest(val flats: List<FlatData>) : AddMetricsRequest()
+    data class SelectFlatRequest(val flats: List<FlatData>, val isInitial: Boolean = false) : AddMetricsRequest()
 
-    data class AddRequest(val flat: FlatData, val publicServices: List<PublicServiceData>) : AddMetricsRequest()
+    data class AddRequest(
+        val flat: FlatData,
+        val publicServices: List<PublicServiceData>,
+        val isInitial: Boolean
+    ) : AddMetricsRequest()
 }

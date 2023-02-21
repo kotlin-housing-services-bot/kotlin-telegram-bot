@@ -73,7 +73,7 @@ create table if not exists metric
     metric_value numeric not null,
     metric_date date not null,
     is_init boolean not null,
-    constraint metric_uk unique(flat_id, public_service_id, metric_date),
+    constraint metric_uk unique(flat_id, public_service_id, metric_date, is_init),
     constraint metric_fk1 foreign key(flat_id) references flat(id),
     constraint metric_fk2 foreign key(public_service_id) references public_service(id)
     );

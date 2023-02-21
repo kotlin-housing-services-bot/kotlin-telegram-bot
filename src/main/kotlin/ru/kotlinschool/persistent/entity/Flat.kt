@@ -48,12 +48,12 @@ class Flat(
     /**
      * Площадь
      */
-    var area: Double? = null,
+    var area: Double,
 
     /**
      * Количество прописанных
      */
-    var numberOfResidents: Long? = null,
+    var numberOfResidents: Long,
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
