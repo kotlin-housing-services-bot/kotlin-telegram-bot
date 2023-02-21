@@ -24,12 +24,12 @@ data class BillData(
     /**
      * Площадь
      */
-    var area: Double? = null,
+    var area: Double,
 
     /**
      * Количество прописанных
      */
-    var numberOfResidents: Long? = null,
+    var numberOfResidents: Long,
 
     /**
      * Перечень услуг
